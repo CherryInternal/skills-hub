@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function Header() {
   return (
@@ -22,7 +23,10 @@ export function Header() {
             CherryIN
           </span>
         </Link>
-        <LocaleSwitcher />
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <LocaleSwitcher />
+        </div>
       </nav>
     </header>
   );
