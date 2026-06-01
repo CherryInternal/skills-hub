@@ -1,38 +1,61 @@
 {
-  "name": "aiskill",
-  "version": "1.0.0",
-  "description": "CLI tool to install and manage AI agent skills from the Skills Registry",
+  "name": "t3base",
+  "version": "0.1.0",
+  "private": true,
   "type": "module",
-  "bin": {
-    "aiskill": "./cli/index.mjs"
-  },
-  "engines": {
-    "node": ">=18"
-  },
   "scripts": {
-    "validate": "node scripts/validate.mjs",
-    "check:registry": "node scripts/check-registry-up-to-date.mjs",
-    "sync:skills": "node scripts/sync-skill-files.mjs",
-    "build:registry": "node scripts/sync-skill-files.mjs && node scripts/build-registry.mjs",
-    "build:registry:no-sync": "node scripts/build-registry.mjs",
-    "sync:check": "node scripts/sync-check.mjs",
-    "sync:fetch": "node scripts/sync-fetch.mjs",
-    "sync": "npm run sync:check && npm run sync:fetch",
-    "build:site": "npm run build --prefix site",
-    "dev:site": "npm run build:registry && npm run dev --prefix site"
+    "build": "next build",
+    "db:generate": "prisma migrate dev",
+    "db:migrate": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "dev": "next dev --turbo",
+    "postinstall": "prisma generate",
+    "preview": "next build && next start",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
   },
-  "keywords": ["skills", "ai", "agents", "claude", "codex", "cursor", "opencode", "antigravity", "cli"],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/inferera/skills-repo.git"
+  "dependencies": {
+    "@base-ui/react": "^1.5.0",
+    "@prisma/client": "^6.6.0",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-label": "^2.1.8",
+    "@radix-ui/react-select": "^2.2.6",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@radix-ui/react-switch": "^1.2.6",
+    "@radix-ui/react-tabs": "^1.1.13",
+    "@t3-oss/env-nextjs": "^0.12.0",
+    "@tanstack/react-query": "^5.69.0",
+    "@trpc/client": "^11.0.0",
+    "@trpc/react-query": "^11.0.0",
+    "@trpc/server": "^11.0.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.17.0",
+    "next": "^15.2.3",
+    "next-intl": "^4.13.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "server-only": "^0.0.1",
+    "shadcn": "^4.8.3",
+    "superjson": "^2.2.1",
+    "tailwind-merge": "^3.6.0",
+    "tw-animate-css": "^1.4.0",
+    "zod": "^3.24.2"
   },
-  "author": "",
-  "license": "MIT",
-  "dependencies": {},
   "devDependencies": {
-    "ajv": "^8.17.1",
-    "ajv-formats": "^3.0.1",
-    "fast-glob": "^3.3.3",
-    "yaml": "^2.7.0"
-  }
+    "@tailwindcss/postcss": "^4.0.15",
+    "@types/node": "^20.14.10",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "postcss": "^8.5.3",
+    "prisma": "^6.6.0",
+    "tailwindcss": "^4.0.15",
+    "typescript": "^5.8.2"
+  },
+  "ct3aMetadata": {
+    "initVersion": "7.40.0"
+  },
+  "packageManager": "pnpm@10.31.0"
 }

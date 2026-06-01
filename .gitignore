@@ -1,36 +1,51 @@
-# Node
-node_modules/
-.npm-cache/
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Next.js (site/)
-site/node_modules/
-site/.next/
-site/out/
-site/.env.local
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
 
-# Local agent installs (not the registry source of truth)
-.codex/skills/
-.claude/skills/
-.cursor/skills/
-.opencode/skills/
-.antigravity/skills/
+# testing
+/coverage
 
-# Generated site artifacts (can be regenerated)
-site/public/registry/*.json
-site/public/sitemap.xml
-site/public/robots.txt
+# database
+/prisma/db.sqlite
+/prisma/db.sqlite-journal
+db.sqlite
 
-# Build cache (skills content)
-.cache/
-site/.cache/
+# next.js
+/.next/
+/out/
+next-env.d.ts
 
-# Sync results (temporary)
-.sync-result.json
+# production
+/build
 
-# macOS
+# misc
 .DS_Store
+*.pem
 
-# Python
-__pycache__/
-*.pyc
-*.pyo
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# local env files
+# do not commit any .env files to git, except for the .env.example file. https://create.t3.gg/en/usage/env-variables#using-environment-variables
+.env
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+# idea files
+.idea
+# Conductor workspace
+.context/
+
+# Prisma generated client
+/generated/
