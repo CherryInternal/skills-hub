@@ -1,7 +1,7 @@
 import "~/styles/globals.css";
 
 import { type Metadata } from "next";
-import { Geist } from "next/font/google";
+import localFont from "next/font/local";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 
@@ -13,9 +13,29 @@ export const metadata: Metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-const geist = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist-sans",
+// 字体与 cherryin 原版一致:本地加载(避免 Google Fonts CDN)
+const inter = localFont({
+  src: "../../public/fonts/inter-latin.woff2",
+  weight: "100 900",
+  variable: "--font-inter",
+  display: "swap",
+});
+const jetbrainsMono = localFont({
+  src: "../../public/fonts/jetbrains-mono-latin.woff2",
+  weight: "100 800",
+  variable: "--font-mono",
+  display: "swap",
+});
+const poppins = localFont({
+  src: [
+    { path: "../../public/fonts/poppins-400.woff2", weight: "400" },
+    { path: "../../public/fonts/poppins-500.woff2", weight: "500" },
+    { path: "../../public/fonts/poppins-600.woff2", weight: "600" },
+    { path: "../../public/fonts/poppins-700.woff2", weight: "700" },
+    { path: "../../public/fonts/poppins-800.woff2", weight: "800" },
+  ],
+  variable: "--font-poppins",
+  display: "swap",
 });
 
 export default async function RootLayout({
@@ -24,7 +44,10 @@ export default async function RootLayout({
   const locale = await getLocale();
   const messages = await getMessages();
   return (
-    <html lang={locale} className={`${geist.variable}`}>
+    <html
+      lang={locale}
+      className={`${inter.variable} ${jetbrainsMono.variable} ${poppins.variable}`}
+    >
       <body>
         <NextIntlClientProvider messages={messages}>
           <TRPCReactProvider>{children}</TRPCReactProvider>
