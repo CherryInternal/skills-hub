@@ -1,0 +1,611 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import {
+  Search,
+  Sparkles,
+  Terminal,
+  Bookmark,
+  Download,
+  Plus,
+  Layers,
+  Inbox,
+  ExternalLink,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Section } from "@/components/ui/section";
+import { cn } from "@/lib/utils";
+import {
+  SKILL_DOMAINS,
+  pickDomainLabel,
+  pickLocale,
+  type Skill,
+  type SkillCategory,
+  type SkillDomain,
+} from "./skills-data";
+import { SkillSubmitDialog } from "./skill-submit-dialog";
+import { SkillDetailSheet } from "./skill-detail-sheet";
+import {
+  appendSubmission,
+  loadListings,
+  loadThirdPartySkills,
+} from "./skills-storage";
+import {
+  applySyncToSkill,
+  dedupThirdParty,
+  maybeRunSync,
+} from "./skills-sync";
+
+type SortOption = "popular" | "newest" | "rating" | "name_asc";
+type TypeFilter = "all" | SkillCategory;
+
+const CATEGORY_ICONS: Record<SkillCategory, typeof Sparkles> = {
+  skill: Sparkles,
+  cli: Terminal,
+};
+
+function formatInstalls(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return String(n);
+}
+
+function isNewSkill(releaseDate: string): boolean {
+  const released = new Date(releaseDate);
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  return released >= thirtyDaysAgo;
+}
+
+function SkillCard({
+  skill,
+  onClick,
+  locale,
+  t,
+}: {
+  skill: Skill;
+  onClick: () => void;
+  locale: string;
+  t: ReturnType<typeof useTranslations<"marketplace">>;
+}) {
+  const Icon = CATEGORY_ICONS[skill.category];
+  const isNew = isNewSkill(skill.releaseDate);
+  const name = pickLocale(skill.name, locale);
+  const description = pickLocale(skill.description, locale);
+  const domainLabel = pickDomainLabel(skill.domain, locale);
+  const feedCount = skill.feeds?.length ?? (skill.sourceFeed ? 1 : 0);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group border-border bg-card relative flex cursor-pointer flex-col overflow-hidden rounded-xl border text-left transition-all duration-200 hover:shadow-md dark:border-white/[0.12] dark:hover:border-white/[0.20]"
+    >
+      <div className="flex flex-1 flex-col gap-4 p-5">
+        <div className="flex items-start gap-3.5">
+          <div className="bg-muted text-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
+            <Icon className="size-4" strokeWidth={2} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="truncate text-sm leading-tight font-semibold tracking-tight">
+                {name}
+              </h3>
+              {isNew && (
+                <span className="shrink-0 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                  {t("newBadge")}
+                </span>
+              )}
+            </div>
+            <div className="mt-1 flex items-center gap-1.5">
+              <span className="text-muted-foreground/60 text-xs font-medium">
+                {skill.author}
+              </span>
+              <span className="text-muted-foreground/30">·</span>
+              <span className="text-muted-foreground/40 font-[Menlo,monospace] text-xs">
+                v{skill.version}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <p className="text-foreground line-clamp-2 text-xs leading-relaxed">
+          {description}
+        </p>
+
+        <div className="mt-auto flex flex-wrap gap-1">
+          <span className="text-muted-foreground/80 ring-foreground/10 rounded-sm px-1.5 py-0.5 text-[10px] ring-1 dark:ring-white/[0.12]">
+            {domainLabel}
+          </span>
+          {skill.tags.slice(0, 2).map((tag) => (
+            <span
+              key={tag}
+              className="text-muted-foreground ring-foreground/10 rounded-sm px-1.5 py-0.5 text-[10px] ring-1 dark:ring-white/[0.12]"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="border-border/60 text-muted-foreground flex items-center justify-between border-t px-5 py-2.5 text-xs dark:border-white/[0.08]">
+        {skill.source === "third_party" && skill.sourceFeed ? (
+          <span className="text-muted-foreground/80 flex min-w-0 items-center gap-1 truncate">
+            <ExternalLink className="size-3 shrink-0" />
+            <span className="truncate font-[Menlo,monospace] text-[10px]">
+              {skill.sourceFeed}
+            </span>
+            {feedCount > 1 && (
+              <span
+                className="bg-muted text-foreground/80 ml-1 shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium"
+                title={t("availableOn", { count: feedCount })}
+              >
+                +{feedCount - 1}
+              </span>
+            )}
+          </span>
+        ) : (
+          <span className="flex items-center gap-1">
+            <Download className="size-3" />
+            {formatInstalls(skill.installs)}
+          </span>
+        )}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            // TODO: wire collection / favorite when storage layer ready
+          }}
+          className="hover:text-foreground flex items-center gap-1"
+          aria-label={t("bookmarkAria")}
+        >
+          <Bookmark className="size-3" />
+          {t("bookmark")}
+        </button>
+      </div>
+    </button>
+  );
+}
+
+
+export function SkillsMarketplace() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const detailParam = searchParams.get("detail");
+  const locale = useLocale();
+  const t = useTranslations("marketplace");
+
+  const [curatedSkills, setCuratedSkills] = useState<Skill[]>([]);
+  const [thirdPartySkills, setThirdPartySkills] = useState<Skill[]>([]);
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
+  const [sourceTab, setSourceTab] = useState<"curated" | "third_party">(
+    "curated",
+  );
+
+  useEffect(() => {
+    const load = () => {
+      const syncState = maybeRunSync();
+      setLastSyncedAt(syncState.lastRunAt);
+      setCuratedSkills(
+        loadListings()
+          .filter((l) => l.published)
+          .map((l) => applySyncToSkill(l.skill, syncState)),
+      );
+      setThirdPartySkills(
+        dedupThirdParty(loadThirdPartySkills()).map((s) =>
+          applySyncToSkill(s, syncState),
+        ),
+      );
+    };
+    load();
+    const interval = setInterval(load, 30_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const allSkills =
+    sourceTab === "curated" ? curatedSkills : thirdPartySkills;
+
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
+  const [activeDomain, setActiveDomain] = useState<SkillDomain | null>(null);
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<SortOption>("popular");
+  const [selected, setSelected] = useState<Skill | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [submitOpen, setSubmitOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(60);
+
+  useEffect(() => {
+    setVisibleCount(60);
+  }, [sourceTab, typeFilter, activeDomain, search, sort]);
+
+  const filtered = useMemo(() => {
+    let list = allSkills.slice();
+    if (typeFilter !== "all") list = list.filter((s) => s.category === typeFilter);
+    if (activeDomain) list = list.filter((s) => s.domain === activeDomain);
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      list = list.filter(
+        (s) =>
+          pickLocale(s.name, locale).toLowerCase().includes(q) ||
+          pickLocale(s.description, locale).toLowerCase().includes(q) ||
+          s.author.toLowerCase().includes(q) ||
+          s.tags.some((tag) => tag.toLowerCase().includes(q)),
+      );
+    }
+    switch (sort) {
+      case "popular":
+        list.sort((a, b) => b.installs - a.installs);
+        break;
+      case "newest":
+        list.sort(
+          (a, b) =>
+            new Date(b.releaseDate).getTime() -
+            new Date(a.releaseDate).getTime(),
+        );
+        break;
+      case "rating":
+        list.sort((a, b) => b.rating - a.rating);
+        break;
+      case "name_asc":
+        list.sort((a, b) =>
+          pickLocale(a.name, locale).localeCompare(pickLocale(b.name, locale)),
+        );
+        break;
+    }
+    return list;
+  }, [allSkills, typeFilter, activeDomain, search, sort, locale]);
+
+  const domainCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    const scoped =
+      typeFilter === "all"
+        ? allSkills
+        : allSkills.filter((s) => s.category === typeFilter);
+    for (const d of SKILL_DOMAINS) counts[d] = 0;
+    for (const s of scoped) counts[s.domain] = (counts[s.domain] ?? 0) + 1;
+    return counts;
+  }, [allSkills, typeFilter]);
+
+  const typeCounts = useMemo(
+    () => ({
+      all: allSkills.length,
+      skill: allSkills.filter((s) => s.category === "skill").length,
+      cli: allSkills.filter((s) => s.category === "cli").length,
+    }),
+    [allSkills],
+  );
+
+  const openDetail = (s: Skill) => {
+    setSelected(s);
+    setSheetOpen(true);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("detail", s.id);
+    router.replace(`/skills_marketplace?${params.toString()}`, {
+      scroll: false,
+    });
+  };
+
+  const closeDetail = (open: boolean) => {
+    setSheetOpen(open);
+    if (!open) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("detail");
+      const qs = params.toString();
+      router.replace(qs ? `/skills_marketplace?${qs}` : "/skills_marketplace", {
+        scroll: false,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!detailParam) {
+      if (sheetOpen) setSheetOpen(false);
+      return;
+    }
+    if (selected?.id === detailParam) return;
+    const found = allSkills.find((s) => s.id === detailParam);
+    if (found) {
+      setSelected(found);
+      setSheetOpen(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detailParam, allSkills]);
+
+  const handleSubmit = (
+    skill: Skill,
+    options?: {
+      githubPrUrl?: string;
+      submissionType?: "self" | "subscription" | "upload";
+    },
+  ) => {
+    appendSubmission(skill, {
+      githubPrUrl: options?.githubPrUrl,
+      submissionType: options?.submissionType,
+    });
+    router.push("/skills_marketplace/my-submissions");
+  };
+
+  const TYPE_TABS: Array<{ key: TypeFilter; label: string; count: number }> = [
+    { key: "all", label: t("typeAll"), count: typeCounts.all },
+    { key: "skill", label: t("typeSkill"), count: typeCounts.skill },
+    { key: "cli", label: t("typeCli"), count: typeCounts.cli },
+  ];
+
+  const syncRelative = lastSyncedAt
+    ? Math.max(0, Math.round((Date.now() - new Date(lastSyncedAt).getTime()) / 1000))
+    : null;
+  const syncLabel =
+    syncRelative === null
+      ? ""
+      : syncRelative < 60
+        ? t("timeAgoSeconds", { seconds: syncRelative })
+        : t("timeAgoMinutes", { minutes: Math.floor(syncRelative / 60) });
+
+  return (
+    <>
+      <Section className="px-6 !py-16 sm:px-8">
+        <div className="max-w-container mx-auto flex flex-col gap-6 sm:gap-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex flex-col gap-1.5">
+              <h1 className="animate-appear text-2xl leading-none font-semibold tracking-tight">
+                {t("title")}
+              </h1>
+              <p className="animate-appear text-muted-foreground text-sm font-normal opacity-0 delay-100">
+                {t("subtitle")}
+              </p>
+              {syncLabel && (
+                <p className="text-muted-foreground/60 text-[10px]">
+                  {t("syncStatus", { when: syncLabel })}
+                </p>
+              )}
+            </div>
+            <div className="animate-appear flex items-center gap-2 opacity-0 delay-100">
+              <Link
+                href="/skills_marketplace/my-submissions"
+                className="text-muted-foreground hover:text-foreground inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm"
+              >
+                <Inbox className="size-4" />
+                {t("mySubmissionsLink")}
+              </Link>
+              <Button
+                onClick={() => setSubmitOpen(true)}
+                className="bg-foreground text-background hover:bg-foreground/90 h-9 gap-1.5"
+              >
+                <Plus className="size-4" />
+                {t("submitButton")}
+              </Button>
+            </div>
+          </div>
+
+          {/* Source tabs: Curated / Third-party */}
+          <div className="animate-appear border-border/60 flex items-center gap-1 border-b dark:border-white/[0.08] opacity-0 delay-150">
+            {(
+              [
+                {
+                  key: "curated" as const,
+                  label: t("tabCurated"),
+                  count: curatedSkills.length,
+                },
+                {
+                  key: "third_party" as const,
+                  label: t("tabThirdParty"),
+                  count: thirdPartySkills.length,
+                },
+              ]
+            ).map(({ key, label, count }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => {
+                  setSourceTab(key);
+                  setActiveDomain(null);
+                  setTypeFilter("all");
+                  setSearch("");
+                }}
+                className={cn(
+                  "relative -mb-px inline-flex h-10 cursor-pointer items-center gap-1.5 border-b-2 px-3 text-sm font-medium transition-colors",
+                  sourceTab === key
+                    ? "border-foreground text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {label}
+                <span className="text-muted-foreground/70 tabular-nums text-xs">
+                  {count >= 1000 ? `${(count / 1000).toFixed(1)}K` : count}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Third-party warning banner */}
+          {sourceTab === "third_party" && (
+            <div className="border-amber-500/30 bg-amber-500/5 text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200 rounded-xl border px-4 py-3 text-xs leading-relaxed">
+              <strong className="font-semibold">
+                {t("thirdPartyWarningTitle")}
+              </strong>{" "}
+              — {t("thirdPartyWarningBody")}
+            </div>
+          )}
+
+          <div className="animate-appear flex w-full gap-8 opacity-0 delay-200">
+            <aside className="hidden w-56 shrink-0 lg:block">
+              <div className="sticky top-28 space-y-6">
+                <div className="space-y-2">
+                  <h3 className="text-foreground flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
+                    <Layers className="size-3.5" />
+                    {t("categoriesHeading")}
+                  </h3>
+                  <div className="flex flex-col gap-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setActiveDomain(null)}
+                      className={cn(
+                        "flex cursor-pointer items-center justify-between rounded-md px-2.5 py-1.5 text-sm",
+                        activeDomain === null
+                          ? "bg-muted text-foreground"
+                          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                      )}
+                    >
+                      <span>{t("allCategories")}</span>
+                      <span className="text-muted-foreground/70 text-xs tabular-nums">
+                        {Object.values(domainCounts).reduce((a, b) => a + b, 0)}
+                      </span>
+                    </button>
+                    {SKILL_DOMAINS.map((d) => {
+                      const count = domainCounts[d] ?? 0;
+                      const disabled = count === 0;
+                      return (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => !disabled && setActiveDomain(d)}
+                          disabled={disabled}
+                          className={cn(
+                            "flex items-center justify-between rounded-md px-2.5 py-1.5 text-sm",
+                            disabled && "text-muted-foreground/40 cursor-not-allowed",
+                            !disabled && "cursor-pointer",
+                            !disabled && activeDomain === d
+                              ? "bg-muted text-foreground"
+                              : !disabled
+                                ? "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                                : "",
+                          )}
+                        >
+                          <span>{pickDomainLabel(d, locale)}</span>
+                          <span className="text-muted-foreground/70 text-xs tabular-nums">
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </aside>
+
+            <div className="min-w-0 flex-1">
+              <div className="mb-4 flex flex-wrap items-center gap-1.5">
+                {TYPE_TABS.map(({ key, label, count }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setTypeFilter(key)}
+                    className={cn(
+                      "inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md border px-3 text-xs font-medium transition-colors",
+                      typeFilter === key
+                        ? "border-foreground text-foreground"
+                        : "border-input text-muted-foreground hover:border-foreground/40 hover:text-foreground",
+                    )}
+                  >
+                    {key === "skill" && (
+                      <Sparkles className="size-3.5" strokeWidth={2} />
+                    )}
+                    {key === "cli" && (
+                      <Terminal className="size-3.5" strokeWidth={2} />
+                    )}
+                    {label}
+                    <span className="text-muted-foreground/70 tabular-nums">
+                      ({count})
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="mb-6 flex items-center gap-3">
+                <div className="relative flex-1">
+                  <Search className="text-muted-foreground absolute top-1/2 left-3 size-3.5 -translate-y-1/2" />
+                  <Input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder={t("searchPlaceholder")}
+                    className="h-9 pl-9"
+                  />
+                </div>
+
+                <Select
+                  value={sort}
+                  onValueChange={(v) => setSort(v as SortOption)}
+                >
+                  <SelectTrigger className="h-9 w-40 shrink-0 shadow-none">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="popular">{t("sortPopular")}</SelectItem>
+                    <SelectItem value="newest">{t("sortNewest")}</SelectItem>
+                    <SelectItem value="rating">{t("sortRating")}</SelectItem>
+                    <SelectItem value="name_asc">{t("sortName")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="text-muted-foreground mb-4 text-sm">
+                {t("itemCount", { count: filtered.length })}
+                {activeDomain ? ` · ${pickDomainLabel(activeDomain, locale)}` : ""}
+              </div>
+
+              {filtered.length > 0 ? (
+                <>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    {filtered.slice(0, visibleCount).map((skill) => (
+                      <SkillCard
+                        key={skill.id}
+                        skill={skill}
+                        locale={locale}
+                        t={t}
+                        onClick={() => openDetail(skill)}
+                      />
+                    ))}
+                  </div>
+                  {visibleCount < filtered.length && (
+                    <div className="mt-6 flex flex-col items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setVisibleCount((n) => n + 60)}
+                        className="h-9"
+                      >
+                        {t("loadMore")}
+                      </Button>
+                      <span className="text-muted-foreground/70 text-xs tabular-nums">
+                        {t("showingOf", {
+                          visible: Math.min(visibleCount, filtered.length),
+                          total: filtered.length,
+                        })}
+                      </span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-muted-foreground py-20 text-center">
+                  {t("emptyTitle")}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      <SkillDetailSheet
+        skill={selected}
+        open={sheetOpen}
+        onOpenChange={closeDetail}
+      />
+      <SkillSubmitDialog
+        open={submitOpen}
+        onOpenChange={setSubmitOpen}
+        onSubmit={handleSubmit}
+      />
+    </>
+  );
+}

@@ -1,0 +1,185 @@
+@utility glass-1 {
+  @apply border border-border bg-card dark:border-white/[0.08] dark:bg-white/[0.03];
+}
+@utility glass-2 {
+  @apply border border-border bg-card dark:border-white/[0.12] dark:bg-white/[0.05];
+}
+@utility glass-3 {
+  @apply border border-border bg-card/50 dark:border-white/[0.06] dark:bg-white/[0.02];
+}
+@utility glass-4 {
+  @apply border border-border bg-card/80 dark:border-white/[0.08] dark:bg-white/[0.03];
+}
+@utility glass-5 {
+  @apply border border-border bg-card dark:border-white/[0.10] dark:bg-white/[0.05];
+}
+
+/* Fade effects */
+@utility fade-x {
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 25%,
+    black 75%,
+    transparent 100%
+  );
+}
+@utility fade-y {
+  mask-image: linear-gradient(
+    to top,
+    transparent 0%,
+    black 25%,
+    black 75%,
+    transparent 100%
+  );
+}
+@utility fade-top {
+  mask-image: linear-gradient(to bottom, transparent 0%, black 35%);
+}
+@utility fade-bottom {
+  mask-image: linear-gradient(to top, transparent 0%, black 35%);
+}
+@utility fade-top-lg {
+  mask-image: linear-gradient(to bottom, transparent 15%, black 100%);
+}
+@utility fade-bottom-lg {
+  mask-image: linear-gradient(to top, transparent 15%, black 100%);
+}
+@utility fade-left {
+  mask-image: linear-gradient(to right, transparent 0%, black 35%);
+}
+@utility fade-right {
+  mask-image: linear-gradient(to left, transparent 0%, black 35%);
+}
+@utility fade-left-lg {
+  mask-image: linear-gradient(to right, transparent 15%, black 100%);
+}
+@utility fade-right-lg {
+  mask-image: linear-gradient(to left, transparent 15%, black 100%);
+}
+
+@utility line-y {
+  @apply border-border dark:border-border/10;
+  border-width: 0 var(--line-width, 0);
+}
+
+@utility line-x {
+  @apply border-border dark:border-border/10;
+  border-width: var(--line-width, 0) 0;
+}
+
+@utility line-b {
+  @apply border-border dark:border-border/10;
+  border-width: 0 0 var(--line-width, 0);
+}
+
+@utility line-t {
+  @apply border-border dark:border-border/10;
+  border-width: var(--line-width, 0) 0;
+}
+
+@utility line-dashed {
+  @apply border-dashed;
+}
+
+/* ── Animated Glow Card ── */
+.card-canvas {
+  --glow-color: var(--brand);
+  position: relative;
+  filter: url(#unopaq);
+}
+
+.card-canvas .card-backdrop {
+  position: absolute;
+  inset: -2px;
+  border-radius: 16px;
+  background: conic-gradient(
+    from var(--glow-angle, 0deg),
+    transparent 0%,
+    var(--glow-color) 4%,
+    transparent 8%,
+    transparent 92%,
+    var(--glow-color) 96%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  animation: glow-spin 4s linear infinite;
+}
+
+.card-canvas:hover .card-backdrop {
+  opacity: 1;
+}
+
+.glow-card {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.glow-card .border-element {
+  position: absolute;
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in oklch, var(--glow-color) 30%, transparent),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.glow-card:hover .border-element {
+  opacity: 1;
+}
+
+.border-element.border-top {
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+}
+
+.border-element.border-bottom {
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+}
+
+.border-element.border-left {
+  left: 0;
+  top: 10%;
+  bottom: 10%;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in oklch, var(--glow-color) 30%, transparent),
+    transparent
+  );
+}
+
+.border-element.border-right {
+  right: 0;
+  top: 10%;
+  bottom: 10%;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in oklch, var(--glow-color) 30%, transparent),
+    transparent
+  );
+}
+
+@property --glow-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes glow-spin {
+  from { --glow-angle: 0deg; }
+  to { --glow-angle: 360deg; }
+}
