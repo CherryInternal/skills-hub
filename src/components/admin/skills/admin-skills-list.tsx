@@ -222,7 +222,6 @@ export function AdminSkillsList() {
               <TableRow>
                 <TableHead>{t("columnName")}</TableHead>
                 <TableHead>{t("columnAuthor")}</TableHead>
-                <TableHead>{t("columnCategory")}</TableHead>
                 <TableHead>{t("columnSubmittedAt")}</TableHead>
                 <TableHead className="text-center">{t("columnAi")}</TableHead>
                 <TableHead className="text-center">{t("columnStatus")}</TableHead>
@@ -250,9 +249,6 @@ export function AdminSkillsList() {
                   </TableCell>
                   <TableCell className="text-muted-foreground text-xs">
                     {sub.skill.author}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-xs">
-                    {sub.skill.category === "skill" ? "Skill" : "CLI"}
                   </TableCell>
                   <TableCell className="text-muted-foreground text-xs">
                     {relativeTime(sub.submittedAt)}

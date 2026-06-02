@@ -168,7 +168,6 @@ function buildMockSubmissions(): UserSubmission[] {
   const stub = (overrides: Partial<Skill>): Skill => ({
     id: "tmp",
     name: "tmp",
-    category: "skill",
     domain: "Other",
     author: "anonymous",
     version: "0.1.0",
@@ -225,7 +224,6 @@ function buildMockSubmissions(): UserSubmission[] {
         id: "mk-stale-cleanup",
         name: "stale-branch-cleanup",
         domain: "Developer Tools",
-        category: "cli",
         author: "ren.z",
         version: "0.2.1",
         description: "Detect stale branches and propose deletions.",
@@ -515,7 +513,6 @@ export type SkillPatch = Partial<
   Pick<
     Skill,
     | "name"
-    | "category"
     | "domain"
     | "author"
     | "version"

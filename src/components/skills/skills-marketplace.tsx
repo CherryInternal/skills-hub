@@ -7,7 +7,6 @@ import { useLocale, useTranslations } from "next-intl";
 import {
   Search,
   Sparkles,
-  Terminal,
   Bookmark,
   Download,
   Plus,
@@ -31,7 +30,6 @@ import {
   pickDomainLabel,
   pickLocale,
   type Skill,
-  type SkillCategory,
   type SkillDomain,
 } from "./skills-data";
 import { SkillSubmitDialog } from "./skill-submit-dialog";
@@ -48,11 +46,6 @@ import {
 } from "./skills-sync";
 
 type SortOption = "popular" | "newest" | "rating" | "name_asc";
-
-const CATEGORY_ICONS: Record<SkillCategory, typeof Sparkles> = {
-  skill: Sparkles,
-  cli: Terminal,
-};
 
 function formatInstalls(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -78,7 +71,7 @@ function SkillCard({
   locale: string;
   t: ReturnType<typeof useTranslations<"marketplace">>;
 }) {
-  const Icon = CATEGORY_ICONS[skill.category];
+  const Icon = Sparkles;
   const isNew = isNewSkill(skill.releaseDate);
   const name = pickLocale(skill.name, locale);
   const description = pickLocale(skill.description, locale);

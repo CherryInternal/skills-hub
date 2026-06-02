@@ -36,7 +36,6 @@ import { cn } from "@/lib/utils";
 import {
   SKILL_DOMAINS,
   type Skill,
-  type SkillCategory,
   type SkillDomain,
 } from "./skills-data";
 import { getGithubNewPrUrl, getGithubRepoUrl } from "./skills-storage";
@@ -57,7 +56,6 @@ type Mode = "chooser" | "github" | "form" | "subscribe";
 
 const EMPTY_FORM = {
   name: "",
-  category: "skill" as SkillCategory,
   domain: SKILL_DOMAINS[0] as SkillDomain,
   author: "",
   description: "",
@@ -127,7 +125,6 @@ export function SkillSubmitDialog({
     const skill: Skill = {
       id: `${slug || "untitled"}-${Date.now().toString(36)}`,
       name: form.name.trim(),
-      category: form.category,
       domain: form.domain,
       author: form.author.trim(),
       version: "0.1.0",
@@ -172,7 +169,6 @@ export function SkillSubmitDialog({
     const skill: Skill = {
       id: `sub-${Date.now().toString(36)}`,
       name: parsedName,
-      category: "skill",
       domain: "Other",
       author: "subscription",
       version: "—",
@@ -497,48 +493,25 @@ export function SkillSubmitDialog({
                       placeholder={t("authorPlaceholder")}
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label>
-                        {t("typeLabel")} <Req />
-                      </Label>
-                      <Select
-                        value={form.category}
-                        onValueChange={(v) =>
-                          set("category", v as SkillCategory)
-                        }
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="skill">
-                            {t("categorySkill")}
+                  <div className="space-y-1.5">
+                    <Label>
+                      {t("domainLabel")} <Req />
+                    </Label>
+                    <Select
+                      value={form.domain}
+                      onValueChange={(v) => set("domain", v as SkillDomain)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SKILL_DOMAINS.map((d) => (
+                          <SelectItem key={d} value={d}>
+                            {d}
                           </SelectItem>
-                          <SelectItem value="cli">{t("categoryCli")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label>
-                        {t("domainLabel")} <Req />
-                      </Label>
-                      <Select
-                        value={form.domain}
-                        onValueChange={(v) => set("domain", v as SkillDomain)}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {SKILL_DOMAINS.map((d) => (
-                            <SelectItem key={d} value={d}>
-                              {d}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </>
               )}

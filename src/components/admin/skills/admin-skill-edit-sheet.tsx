@@ -24,7 +24,6 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   SKILL_DOMAINS,
   pickLocale,
-  type SkillCategory,
   type SkillDomain,
 } from "@/components/skills/skills-data";
 import {
@@ -33,14 +32,8 @@ import {
   type SkillPatch,
 } from "@/components/skills/skills-storage";
 
-const CATEGORIES: Array<{ value: SkillCategory; label: string }> = [
-  { value: "skill", label: "Skill" },
-  { value: "cli", label: "CLI" },
-];
-
 interface FormState {
   name: string;
-  category: SkillCategory;
   domain: SkillDomain;
   author: string;
   version: string;
@@ -58,7 +51,6 @@ function toForm(item: ListingItem): FormState {
   const s = item.skill;
   return {
     name: pickLocale(s.name, "en"),
-    category: s.category,
     domain: s.domain,
     author: s.author,
     version: s.version,
@@ -76,7 +68,6 @@ function toForm(item: ListingItem): FormState {
 function toPatch(form: FormState): SkillPatch {
   return {
     name: form.name.trim(),
-    category: form.category,
     domain: form.domain,
     author: form.author.trim(),
     version: form.version.trim(),
@@ -177,43 +168,23 @@ export function AdminSkillEditSheet({
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>{t("labelCategory")}</Label>
-                <Select
-                  value={form.category}
-                  onValueChange={(v) => set("category", v as SkillCategory)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIES.map((c) => (
-                      <SelectItem key={c.value} value={c.value}>
-                        {c.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>{t("labelDomain")}</Label>
-                <Select
-                  value={form.domain}
-                  onValueChange={(v) => set("domain", v as SkillDomain)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SKILL_DOMAINS.map((d) => (
-                      <SelectItem key={d} value={d}>
-                        {d}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-1.5">
+              <Label>{t("labelDomain")}</Label>
+              <Select
+                value={form.domain}
+                onValueChange={(v) => set("domain", v as SkillDomain)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SKILL_DOMAINS.map((d) => (
+                    <SelectItem key={d} value={d}>
+                      {d}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </section>
 

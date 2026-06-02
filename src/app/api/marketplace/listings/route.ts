@@ -12,7 +12,6 @@ import {
 //
 // GET /api/marketplace/listings
 //   ?source=curated|third_party|all   (default: all)
-//   ?category=skill|cli               (optional)
 //   ?domain=AI+%26+Agents             (optional)
 //   ?q=search                          (optional)
 //   ?limit=50                          (default 200, max 500)
@@ -25,7 +24,6 @@ export const revalidate = 300; // ISR: re-cache every 5 min
 
 interface Query {
   source: "curated" | "third_party" | "all";
-  category?: "skill" | "cli";
   domain?: string;
   q?: string;
   limit: number;
@@ -40,12 +38,6 @@ function parseQuery(searchParams: URLSearchParams): Query {
     source: ["curated", "third_party", "all"].includes(source)
       ? source
       : "all",
-    category:
-      searchParams.get("category") === "cli"
-        ? "cli"
-        : searchParams.get("category") === "skill"
-          ? "skill"
-          : undefined,
     domain: searchParams.get("domain") ?? undefined,
     q: searchParams.get("q") ?? undefined,
     limit: Math.min(500, Math.max(1, Number.isFinite(limitRaw) ? limitRaw : 200)),
@@ -55,7 +47,6 @@ function parseQuery(searchParams: URLSearchParams): Query {
 
 function filterSkills(list: Skill[], q: Query): Skill[] {
   let out = list;
-  if (q.category) out = out.filter((s) => s.category === q.category);
   if (q.domain) out = out.filter((s) => s.domain === q.domain);
   if (q.q) {
     const needle = q.q.toLowerCase();
@@ -74,7 +65,6 @@ function publicSkill(s: Skill) {
   return {
     id: s.id,
     name: s.name,
-    category: s.category,
     domain: s.domain,
     author: s.author,
     version: s.version,
