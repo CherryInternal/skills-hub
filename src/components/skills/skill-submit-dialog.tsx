@@ -701,7 +701,7 @@ export function SkillSubmitDialog({
 
             <div className="border-border/60 mt-1 border-t pt-3 text-center text-xs dark:border-white/[0.10]">
               <Link
-                href="/skills_marketplace/my-submissions"
+                href="/my-submissions"
                 className="text-muted-foreground hover:text-foreground"
                 onClick={() => onOpenChange(false)}
               >

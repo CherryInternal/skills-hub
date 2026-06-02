@@ -8,7 +8,7 @@ export function Header() {
     <header className="bg-background/95 supports-[backdrop-filter]:bg-background/80 border-border/40 sticky top-0 z-50 w-full border-b backdrop-blur-lg">
       <nav className="flex h-16 w-full items-center justify-between px-5">
         <Link
-          href="/skills_marketplace"
+          href="/"
           className="flex items-center gap-2.5 transition-opacity hover:opacity-80"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}

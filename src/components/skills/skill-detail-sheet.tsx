@@ -370,7 +370,7 @@ export function SkillDetailSheet({
           {/* Header */}
           <SheetHeader className="border-border/60 bg-background relative space-y-3 border-b px-6 pt-6 pb-5 dark:border-white/[0.08]">
             <div className="text-muted-foreground/70 flex items-center gap-1 text-[11px]">
-              <Link href="/skills_marketplace" className="hover:text-foreground">
+              <Link href="/" className="hover:text-foreground">
                 Skills
               </Link>
               <ChevronRight className="size-3" />
@@ -433,7 +433,7 @@ export function SkillDetailSheet({
                   title="Share"
                   onClick={() =>
                     void navigator.clipboard.writeText(
-                      `${window.location.origin}/skills_marketplace?detail=${current.id}`,
+                      `${window.location.origin}/?detail=${current.id}`,
                     )
                   }
                 >

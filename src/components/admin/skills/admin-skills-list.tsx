@@ -172,7 +172,7 @@ export function AdminSkillsList() {
         </div>
 
         <Link
-          href="/admin/skills/ai-review"
+          href="/admin/ai-review"
           className={cn(
             "border-input hover:bg-muted/60 inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-xs font-medium",
             aiEnabled && "border-emerald-500/40 text-emerald-700 dark:text-emerald-300",
@@ -234,7 +234,7 @@ export function AdminSkillsList() {
                 <TableRow key={sub.skill.id}>
                   <TableCell>
                     <Link
-                      href={`/admin/skills/${sub.skill.id}`}
+                      href={`/admin/${sub.skill.id}`}
                       className="block min-w-0"
                     >
                       <div className="text-foreground truncate text-sm font-semibold tracking-tight">

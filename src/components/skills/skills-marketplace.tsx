@@ -291,7 +291,7 @@ export function SkillsMarketplace() {
     setSheetOpen(true);
     const params = new URLSearchParams(searchParams.toString());
     params.set("detail", s.id);
-    router.replace(`/skills_marketplace?${params.toString()}`, {
+    router.replace(`/?${params.toString()}`, {
       scroll: false,
     });
   };
@@ -302,7 +302,7 @@ export function SkillsMarketplace() {
       const params = new URLSearchParams(searchParams.toString());
       params.delete("detail");
       const qs = params.toString();
-      router.replace(qs ? `/skills_marketplace?${qs}` : "/skills_marketplace", {
+      router.replace(qs ? `/?${qs}` : "/", {
         scroll: false,
       });
     }
@@ -333,7 +333,7 @@ export function SkillsMarketplace() {
       githubPrUrl: options?.githubPrUrl,
       submissionType: options?.submissionType,
     });
-    router.push("/skills_marketplace/my-submissions");
+    router.push("/my-submissions");
   };
 
   const TYPE_TABS: Array<{ key: TypeFilter; label: string; count: number }> = [
@@ -372,7 +372,7 @@ export function SkillsMarketplace() {
             </div>
             <div className="animate-appear flex items-center gap-2 opacity-0 delay-100">
               <Link
-                href="/skills_marketplace/my-submissions"
+                href="/my-submissions"
                 className="text-muted-foreground hover:text-foreground inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm"
               >
                 <Inbox className="size-4" />
