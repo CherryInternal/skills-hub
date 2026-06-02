@@ -1,6 +1,16 @@
+import { useTranslations } from "next-intl";
 import { Clock, Eye, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { statusLabel, type SubmissionStatus } from "./skills-storage";
+import { type SubmissionStatus } from "./skills-storage";
+
+// Maps each status to its i18n key (resolved with t() inside the component).
+const STATUS_LABEL_KEYS: Record<SubmissionStatus, string> = {
+  pending: "statusPending",
+  reviewing: "statusReviewing",
+  changes_requested: "statusChangesRequested",
+  approved: "statusApproved",
+  rejected: "statusRejected",
+};
 
 const STATUS_STYLES: Record<
   SubmissionStatus,
@@ -44,6 +54,7 @@ export function StatusBadge({
   size = "xs",
   className,
 }: StatusBadgeProps) {
+  const t = useTranslations("statusBadge");
   const { Icon, className: variantClassName } = STATUS_STYLES[status];
   const sizing =
     size === "xs"
@@ -59,7 +70,7 @@ export function StatusBadge({
       )}
     >
       <Icon className={size === "xs" ? "size-3" : "size-3.5"} strokeWidth={2} />
-      {statusLabel(status)}
+      {t(STATUS_LABEL_KEYS[status])}
     </span>
   );
 }

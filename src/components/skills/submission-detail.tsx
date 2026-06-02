@@ -25,7 +25,7 @@ import {
 } from "./skills-storage";
 import { StatusBadge } from "./status-badge";
 import { pickLocale } from "./skills-data";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 const TIMELINE_ICONS: Record<TimelineEvent["type"], typeof Clock> = {
   submitted: Send,
@@ -68,6 +68,7 @@ export function SubmissionDetail({
 }: {
   submissionId: string;
 }) {
+  const t = useTranslations("submissionDetail");
   const locale = useLocale();
   const [submission, setSubmission] = useState<UserSubmission | null>(null);
   const [notFound, setNotFound] = useState(false);
@@ -94,18 +95,17 @@ export function SubmissionDetail({
       <Section className="px-6 !py-16 sm:px-8">
         <div className="max-w-container mx-auto flex flex-col items-center gap-4 py-20 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">
-            Submission not found
+            {t("notFoundTitle")}
           </h1>
           <p className="text-muted-foreground text-sm">
-            This submission may have been deleted, or it lives on another
-            device.
+            {t("notFoundBody")}
           </p>
           <Link
             href="/submissions"
             className="text-foreground hover:text-foreground/80 mt-2 inline-flex items-center gap-1 text-sm font-medium"
           >
             <ArrowLeft className="size-3.5" />
-            Back to submissions
+            {t("backToSubmissions")}
           </Link>
         </div>
       </Section>
@@ -130,7 +130,7 @@ export function SubmissionDetail({
           className="text-muted-foreground hover:text-foreground inline-flex w-fit items-center gap-1 text-xs"
         >
           <ArrowLeft className="size-3" />
-          Back to submissions
+          {t("backToSubmissions")}
         </Link>
 
         <div className="border-border bg-card flex flex-col gap-5 rounded-xl border p-6 dark:border-white/[0.12]">
@@ -152,7 +152,9 @@ export function SubmissionDetail({
                 <span>{submission.skill.domain}</span>
                 <span className="text-muted-foreground/30">·</span>
                 <span>
-                  Submitted {fmtDateTime(submission.submittedAt)}
+                  {t("submittedAt", {
+                    date: fmtDateTime(submission.submittedAt),
+                  })}
                 </span>
               </div>
             </div>
@@ -165,7 +167,7 @@ export function SubmissionDetail({
                   className="border-input hover:bg-muted/60 inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium"
                 >
                   <GitBranch className="size-4" />
-                  PR
+                  {t("pr")}
                   <ExternalLink className="size-3" />
                 </a>
               )}
@@ -176,7 +178,7 @@ export function SubmissionDetail({
                 className="border-input hover:bg-muted/60 inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium"
               >
                 <FileText className="size-4" />
-                Docs
+                {t("docs")}
                 <ExternalLink className="size-3" />
               </a>
             </div>
@@ -185,7 +187,7 @@ export function SubmissionDetail({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground text-xs">
-                Review progress
+                {t("reviewProgress")}
               </span>
               <span className="text-foreground text-xs font-medium tabular-nums">
                 {progress}%
@@ -212,7 +214,7 @@ export function SubmissionDetail({
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="border-border bg-card lg:col-span-2 rounded-xl border p-6 dark:border-white/[0.12]">
             <h2 className="text-foreground text-xs font-semibold tracking-wide uppercase">
-              Timeline
+              {t("timeline")}
             </h2>
             <ol className="mt-4 space-y-5">
               {submission.timeline.map((event, idx) => {
@@ -236,7 +238,7 @@ export function SubmissionDetail({
                     <div className="min-w-0 flex-1 pt-1">
                       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                         <span className="text-foreground text-sm font-medium">
-                          {event.actor ?? "system"}
+                          {event.actor ?? t("system")}
                         </span>
                         <span className="text-muted-foreground text-xs">
                           {fmtDateTime(event.at)}
@@ -257,7 +259,7 @@ export function SubmissionDetail({
           <div className="space-y-4">
             <div className="border-border bg-card rounded-xl border p-6 dark:border-white/[0.12]">
               <h2 className="text-foreground text-xs font-semibold tracking-wide uppercase">
-                About
+                {t("about")}
               </h2>
               <p className="text-foreground mt-3 text-sm leading-relaxed">
                 {pickLocale(submission.skill.longDescription, locale)}
@@ -278,7 +280,7 @@ export function SubmissionDetail({
 
             <div className="border-border bg-card rounded-xl border p-6 dark:border-white/[0.12]">
               <h2 className="text-foreground text-xs font-semibold tracking-wide uppercase">
-                Install
+                {t("install")}
               </h2>
               <div className="border-border bg-muted/40 mt-3 rounded-lg border px-3 py-2 dark:border-white/[0.12]">
                 <code className="text-foreground font-[Menlo,monospace] text-xs">

@@ -16,40 +16,59 @@ import { cn } from "@/lib/utils";
 import {
   deleteSubmission,
   loadSubmissions,
-  statusLabel,
   statusProgress,
   type SubmissionStatus,
   type UserSubmission,
 } from "./skills-storage";
 import { StatusBadge } from "./status-badge";
 import { pickLocale } from "./skills-data";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
-const TABS: Array<{ key: "all" | SubmissionStatus; label: string }> = [
-  { key: "all", label: "All" },
-  { key: "pending", label: "Pending" },
-  { key: "reviewing", label: "Under review" },
-  { key: "changes_requested", label: "Changes requested" },
-  { key: "approved", label: "Approved" },
-  { key: "rejected", label: "Rejected" },
+const TAB_KEYS: Array<"all" | SubmissionStatus> = [
+  "all",
+  "pending",
+  "reviewing",
+  "changes_requested",
+  "approved",
+  "rejected",
 ];
-
-function relativeTime(iso: string): string {
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const seconds = Math.floor(diffMs / 1000);
-  if (seconds < 60) return `${seconds}s ago`;
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
 
 export function MySubmissions() {
   const locale = useLocale();
+  const t = useTranslations("mySubmissions");
+
+  const relativeTime = (iso: string): string => {
+    const diffMs = Date.now() - new Date(iso).getTime();
+    const seconds = Math.floor(diffMs / 1000);
+    if (seconds < 60) return t("relativeSeconds", { count: seconds });
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return t("relativeMinutes", { count: minutes });
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return t("relativeHours", { count: hours });
+    const days = Math.floor(hours / 24);
+    return t("relativeDays", { count: days });
+  };
+
+  const tabLabel = (key: "all" | SubmissionStatus): string => {
+    switch (key) {
+      case "all":
+        return t("tabAll");
+      case "pending":
+        return t("tabPending");
+      case "reviewing":
+        return t("tabReviewing");
+      case "changes_requested":
+        return t("tabChangesRequested");
+      case "approved":
+        return t("tabApproved");
+      case "rejected":
+        return t("tabRejected");
+    }
+  };
+
   const [items, setItems] = useState<UserSubmission[]>([]);
-  const [activeTab, setActiveTab] = useState<(typeof TABS)[number]["key"]>("all");
+  const [activeTab, setActiveTab] =
+    useState<(typeof TAB_KEYS)[number]>("all");
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -63,7 +82,7 @@ export function MySubmissions() {
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { all: items.length };
-    for (const t of TABS.slice(1)) c[t.key] = 0;
+    for (const key of TAB_KEYS.slice(1)) c[key] = 0;
     for (const it of items) c[it.status] = (c[it.status] ?? 0) + 1;
     return c;
   }, [items]);
@@ -93,25 +112,25 @@ export function MySubmissions() {
               className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs"
             >
               <ArrowLeft className="size-3" />
-              Back to marketplace
+              {t("backToMarketplace")}
             </Link>
             <h1 className="text-2xl leading-none font-semibold tracking-tight">
-              My submissions
+              {t("title")}
             </h1>
             <p className="text-muted-foreground text-sm">
-              Track the review status of every skill you've submitted.
+              {t("subtitle")}
             </p>
           </div>
           <Link
             href="/"
             className="bg-foreground text-background hover:bg-foreground/90 inline-flex h-9 items-center justify-center gap-1.5 rounded-lg px-4 text-sm font-medium"
           >
-            Submit another →
+            {t("submitAnother")}
           </Link>
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
-          {TABS.map(({ key, label }) => (
+          {TAB_KEYS.map((key) => (
             <button
               key={key}
               type="button"
@@ -123,7 +142,7 @@ export function MySubmissions() {
                   : "border-input text-muted-foreground hover:border-foreground/40 hover:text-foreground",
               )}
             >
-              {label}
+              {tabLabel(key)}
               <span className="text-muted-foreground/70 tabular-nums">
                 ({counts[key] ?? 0})
               </span>
@@ -138,17 +157,19 @@ export function MySubmissions() {
             </div>
             <div className="text-center">
               <p className="text-foreground text-sm font-medium">
-                No submissions {activeTab !== "all" ? `in "${statusLabel(activeTab as SubmissionStatus)}"` : "yet"}
+                {activeTab !== "all"
+                  ? t("emptyTitleFiltered", { status: tabLabel(activeTab) })
+                  : t("emptyTitle")}
               </p>
               <p className="text-muted-foreground mt-1 text-xs">
-                Submit a skill from the marketplace to see it here.
+                {t("emptyDescription")}
               </p>
             </div>
             <Link
               href="/"
               className="text-foreground hover:text-foreground/80 mt-1 inline-flex items-center gap-1 text-xs font-medium"
             >
-              Go to marketplace
+              {t("goToMarketplace")}
               <ArrowRight className="size-3" />
             </Link>
           </div>
@@ -190,7 +211,9 @@ export function MySubmissions() {
                             </span>
                             <span className="text-muted-foreground/30">·</span>
                             <span className="text-muted-foreground/60 text-xs">
-                              Submitted {relativeTime(sub.submittedAt)}
+                              {t("submittedAt", {
+                                time: relativeTime(sub.submittedAt),
+                              })}
                             </span>
                           </div>
 
@@ -224,8 +247,8 @@ export function MySubmissions() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="hover:bg-muted text-muted-foreground hover:text-foreground inline-flex size-8 items-center justify-center rounded-md cursor-pointer"
-                            aria-label="View GitHub PR"
-                            title="View GitHub PR"
+                            aria-label={t("viewGithubPr")}
+                            title={t("viewGithubPr")}
                           >
                             <GitBranch className="size-4" />
                           </a>
@@ -235,8 +258,8 @@ export function MySubmissions() {
                             type="button"
                             onClick={() => handleDelete(sub.skill.id)}
                             className="hover:bg-muted text-muted-foreground hover:text-rose-600 inline-flex size-8 items-center justify-center rounded-md cursor-pointer"
-                            aria-label="Delete submission"
-                            title="Delete submission"
+                            aria-label={t("deleteSubmission")}
+                            title={t("deleteSubmission")}
                           >
                             <Trash2 className="size-4" />
                           </button>
@@ -244,7 +267,7 @@ export function MySubmissions() {
                         <Link
                           href={`/submissions/${sub.skill.id}`}
                           className="hover:bg-muted text-muted-foreground hover:text-foreground inline-flex size-8 items-center justify-center rounded-md"
-                          aria-label="View details"
+                          aria-label={t("viewDetails")}
                         >
                           <ChevronRight className="size-4" />
                         </Link>

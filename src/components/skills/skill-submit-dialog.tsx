@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   GitBranch,
   Send,
@@ -71,10 +72,10 @@ const EMPTY_SUBSCRIBE = {
   note: "",
 };
 
-const STEPS: Array<{ key: 1 | 2 | 3; label: string }> = [
-  { key: 1, label: "Basics" },
-  { key: 2, label: "Details" },
-  { key: 3, label: "Install" },
+const STEPS: Array<{ key: 1 | 2 | 3; labelKey: string }> = [
+  { key: 1, labelKey: "stepBasics" },
+  { key: 2, labelKey: "stepDetails" },
+  { key: 3, labelKey: "stepInstall" },
 ];
 
 function Req() {
@@ -86,6 +87,7 @@ export function SkillSubmitDialog({
   onOpenChange,
   onSubmit,
 }: SkillSubmitDialogProps) {
+  const t = useTranslations("submit");
   const [mode, setMode] = useState<Mode>("chooser");
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -198,11 +200,8 @@ export function SkillSubmitDialog({
         {mode === "chooser" && (
           <>
             <DialogHeader>
-              <DialogTitle>Submit a skill</DialogTitle>
-              <DialogDescription>
-                Pick how you want to contribute. Both paths land in the same
-                review queue.
-              </DialogDescription>
+              <DialogTitle>{t("submitTitle")}</DialogTitle>
+              <DialogDescription>{t("chooserDescription")}</DialogDescription>
             </DialogHeader>
 
             <div className="grid grid-cols-1 gap-3">
@@ -216,11 +215,10 @@ export function SkillSubmitDialog({
                 </div>
                 <div className="min-w-0 flex-1 space-y-0.5">
                   <h3 className="text-foreground text-sm font-semibold tracking-tight">
-                    Subscribe to a source
+                    {t("chooserSubscribeTitle")}
                   </h3>
                   <p className="text-muted-foreground text-xs leading-relaxed">
-                    Paste a GitHub / repo URL — all skills inside will be synced
-                    into the marketplace automatically.
+                    {t("chooserSubscribeDesc")}
                   </p>
                 </div>
                 <ArrowRight className="text-muted-foreground/50 group-hover:text-foreground mt-1 size-4 shrink-0" />
@@ -236,11 +234,10 @@ export function SkillSubmitDialog({
                 </div>
                 <div className="min-w-0 flex-1 space-y-0.5">
                   <h3 className="text-foreground text-sm font-semibold tracking-tight">
-                    Submit your own skill
+                    {t("chooserOwnTitle")}
                   </h3>
                   <p className="text-muted-foreground text-xs leading-relaxed">
-                    Fill a short form, or upload a SKILL.md / archive. No
-                    GitHub account required.
+                    {t("chooserOwnDesc")}
                   </p>
                 </div>
                 <ArrowRight className="text-muted-foreground/50 group-hover:text-foreground mt-1 size-4 shrink-0" />
@@ -256,11 +253,10 @@ export function SkillSubmitDialog({
                 </div>
                 <div className="min-w-0 flex-1 space-y-0.5">
                   <h3 className="text-foreground text-sm font-semibold tracking-tight">
-                    Submit via GitHub PR
+                    {t("chooserGithubTitle")}
                   </h3>
                   <p className="text-muted-foreground text-xs leading-relaxed">
-                    Fork the marketplace repo and open a PR. For polished
-                    open-source contributions.
+                    {t("chooserGithubDesc")}
                   </p>
                 </div>
                 <ArrowRight className="text-muted-foreground/50 group-hover:text-foreground mt-1 size-4 shrink-0" />
@@ -272,11 +268,8 @@ export function SkillSubmitDialog({
         {mode === "subscribe" && (
           <>
             <DialogHeader>
-              <DialogTitle>Subscribe to a source</DialogTitle>
-              <DialogDescription>
-                Paste a GitHub / Gitee / Lark Wiki URL. Every skill inside will
-                be synced and reviewed.
-              </DialogDescription>
+              <DialogTitle>{t("subscribeTitle")}</DialogTitle>
+              <DialogDescription>{t("subscribeDescription")}</DialogDescription>
             </DialogHeader>
 
             <form
@@ -292,7 +285,7 @@ export function SkillSubmitDialog({
                   className="inline-flex items-center gap-1.5"
                 >
                   <Rss className="size-3.5" />
-                  Source URL <span className="text-rose-500">*</span>
+                  {t("sourceUrlLabel")} <span className="text-rose-500">*</span>
                 </Label>
                 <Input
                   id="sub-url"
@@ -306,7 +299,7 @@ export function SkillSubmitDialog({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="sub-note">Note</Label>
+                <Label htmlFor="sub-note">{t("noteLabel")}</Label>
                 <Textarea
                   id="sub-note"
                   rows={3}
@@ -314,13 +307,12 @@ export function SkillSubmitDialog({
                   onChange={(e) =>
                     setSubscribe((s) => ({ ...s, note: e.target.value }))
                   }
-                  placeholder="Why this source is worth syncing (visible to admin)."
+                  placeholder={t("notePlaceholder")}
                 />
               </div>
 
               <div className="border-border bg-muted/30 text-muted-foreground rounded-md border p-3 text-xs dark:border-white/[0.10]">
-                We poll the source every 6 hours. New skills enter the review
-                queue automatically.
+                {t("subscribePollHint")}
               </div>
 
               <DialogFooter>
@@ -329,14 +321,14 @@ export function SkillSubmitDialog({
                   variant="ghost"
                   onClick={() => setMode("chooser")}
                 >
-                  Back
+                  {t("back")}
                 </Button>
                 <Button
                   type="submit"
                   disabled={!canSubscribe}
                   className="bg-foreground text-background hover:bg-foreground/90"
                 >
-                  Subscribe
+                  {t("subscribeButton")}
                 </Button>
               </DialogFooter>
             </form>
@@ -346,18 +338,15 @@ export function SkillSubmitDialog({
         {mode === "github" && (
           <>
             <DialogHeader>
-              <DialogTitle>Submit via GitHub</DialogTitle>
-              <DialogDescription>
-                Three steps. The PR is the single source of truth for your
-                submission — everything happens in there.
-              </DialogDescription>
+              <DialogTitle>{t("githubTitle")}</DialogTitle>
+              <DialogDescription>{t("githubDescription")}</DialogDescription>
             </DialogHeader>
 
             <ol className="space-y-3 text-sm">
               {[
                 {
                   n: 1,
-                  title: "Fork the marketplace repo",
+                  title: t("githubStep1Title"),
                   body: (
                     <a
                       href={getGithubRepoUrl()}
@@ -372,29 +361,27 @@ export function SkillSubmitDialog({
                 },
                 {
                   n: 2,
-                  title: "Add your skill files",
+                  title: t("githubStep2Title"),
                   body: (
                     <span className="text-muted-foreground">
-                      Copy{" "}
+                      {t("githubStep2Before")}{" "}
                       <code className="font-[Menlo,monospace] text-xs">
                         skills/_template/
                       </code>{" "}
-                      to{" "}
+                      {t("githubStep2To")}{" "}
                       <code className="font-[Menlo,monospace] text-xs">
                         skills/&lt;your-skill&gt;/
                       </code>{" "}
-                      and fill in the manifest + README.
+                      {t("githubStep2After")}
                     </span>
                   ),
                 },
                 {
                   n: 3,
-                  title: "Open a PR",
+                  title: t("githubStep3Title"),
                   body: (
                     <span className="text-muted-foreground">
-                      Stale after 14 days without activity, closed after 21
-                      days. Once merged, your skill is auto-published to the
-                      marketplace.
+                      {t("githubStep3Body")}
                     </span>
                   ),
                 },
@@ -412,9 +399,9 @@ export function SkillSubmitDialog({
             </ol>
 
             <p className="text-muted-foreground border-border bg-muted/30 rounded-md border p-3 text-xs dark:border-white/[0.10]">
-              Want us to track your PR here? Paste the PR URL after you open it
-              under <strong>Quick submit → step 3</strong> and we'll keep it in
-              your submissions dashboard.
+              {t("githubTrackHintBefore")}{" "}
+              <strong>{t("githubTrackHintStep")}</strong>{" "}
+              {t("githubTrackHintAfter")}
             </p>
 
             <DialogFooter>
@@ -423,7 +410,7 @@ export function SkillSubmitDialog({
                 variant="ghost"
                 onClick={() => setMode("chooser")}
               >
-                Back
+                {t("back")}
               </Button>
               <a
                 href={getGithubNewPrUrl(form.name || "new-skill")}
@@ -432,7 +419,7 @@ export function SkillSubmitDialog({
                 className="bg-foreground text-background hover:bg-foreground/90 inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium"
               >
                 <GitBranch className="size-4" />
-                Open GitHub
+                {t("openGithub")}
               </a>
             </DialogFooter>
           </>
@@ -442,12 +429,12 @@ export function SkillSubmitDialog({
           <>
             <DialogHeader>
               <DialogTitle>
-                Quick submit · {STEPS[step - 1]!.label}
+                {t("quickSubmitTitle")} · {t(STEPS[step - 1]!.labelKey)}
               </DialogTitle>
             </DialogHeader>
 
             <div className="flex items-center gap-2">
-              {STEPS.map(({ key, label }) => (
+              {STEPS.map(({ key, labelKey }) => (
                 <div key={key} className="flex flex-1 items-center gap-2">
                   <div
                     className={cn(
@@ -467,7 +454,7 @@ export function SkillSubmitDialog({
                       step >= key ? "text-foreground" : "text-muted-foreground",
                     )}
                   >
-                    {label}
+                    {t(labelKey)}
                   </span>
                   {key < 3 && (
                     <div className="bg-border/60 h-px flex-1 dark:bg-white/[0.10]" />
@@ -489,31 +476,31 @@ export function SkillSubmitDialog({
                 <>
                   <div className="space-y-1.5">
                     <Label htmlFor="skill-name">
-                      Name <Req />
+                      {t("nameLabel")} <Req />
                     </Label>
                     <Input
                       id="skill-name"
                       value={form.name}
                       onChange={(e) => set("name", e.target.value)}
-                      placeholder="Diff Reviewer"
+                      placeholder={t("namePlaceholder")}
                       autoFocus
                     />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="skill-author">
-                      Author <Req />
+                      {t("authorLabel")} <Req />
                     </Label>
                     <Input
                       id="skill-author"
                       value={form.author}
                       onChange={(e) => set("author", e.target.value)}
-                      placeholder="Your name or organization"
+                      placeholder={t("authorPlaceholder")}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <Label>
-                        Type <Req />
+                        {t("typeLabel")} <Req />
                       </Label>
                       <Select
                         value={form.category}
@@ -525,14 +512,16 @@ export function SkillSubmitDialog({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="skill">Skill</SelectItem>
-                          <SelectItem value="cli">CLI</SelectItem>
+                          <SelectItem value="skill">
+                            {t("categorySkill")}
+                          </SelectItem>
+                          <SelectItem value="cli">{t("categoryCli")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-1.5">
                       <Label>
-                        Domain <Req />
+                        {t("domainLabel")} <Req />
                       </Label>
                       <Select
                         value={form.domain}
@@ -558,25 +547,25 @@ export function SkillSubmitDialog({
                 <>
                   <div className="space-y-1.5">
                     <Label htmlFor="skill-desc">
-                      Short description <Req />
+                      {t("shortDescLabel")} <Req />
                     </Label>
                     <Input
                       id="skill-desc"
                       value={form.description}
                       onChange={(e) => set("description", e.target.value)}
-                      placeholder="One-line pitch shown on the card"
+                      placeholder={t("shortDescPlaceholder")}
                       autoFocus
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="skill-long">Long description</Label>
+                    <Label htmlFor="skill-long">{t("longDescLabel")}</Label>
                     <Textarea
                       id="skill-long"
                       value={form.longDescription}
                       onChange={(e) =>
                         set("longDescription", e.target.value)
                       }
-                      placeholder="What it does, when to use it, what makes it stand out."
+                      placeholder={t("longDescPlaceholder")}
                       rows={5}
                     />
                   </div>
@@ -587,7 +576,7 @@ export function SkillSubmitDialog({
                 <>
                   <div className="space-y-1.5">
                     <Label htmlFor="skill-install">
-                      Install command <Req />
+                      {t("installCommandLabel")} <Req />
                     </Label>
                     <Input
                       id="skill-install"
@@ -599,7 +588,7 @@ export function SkillSubmitDialog({
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="skill-docs">
-                      Docs URL <Req />
+                      {t("docsUrlLabel")} <Req />
                     </Label>
                     <Input
                       id="skill-docs"
@@ -615,7 +604,7 @@ export function SkillSubmitDialog({
                       className="inline-flex items-center gap-1.5"
                     >
                       <GitBranch className="size-3.5" />
-                      GitHub repo
+                      {t("githubRepoLabel")}
                     </Label>
                     <Input
                       id="skill-gh"
@@ -632,7 +621,7 @@ export function SkillSubmitDialog({
                       className="inline-flex items-center gap-1.5"
                     >
                       <Upload className="size-3.5" />
-                      Upload skill files
+                      {t("uploadLabel")}
                     </Label>
                     {uploadedFile ? (
                       <div className="border-border bg-muted/30 flex items-center gap-2 rounded-md border px-3 py-2 dark:border-white/[0.10]">
@@ -647,7 +636,7 @@ export function SkillSubmitDialog({
                           type="button"
                           onClick={() => setUploadedFile(null)}
                           className="hover:bg-accent text-muted-foreground hover:text-foreground rounded p-1"
-                          aria-label="Remove file"
+                          aria-label={t("removeFile")}
                         >
                           <X className="size-3.5" />
                         </button>
@@ -658,7 +647,7 @@ export function SkillSubmitDialog({
                         className="border-border bg-muted/20 hover:bg-muted/40 text-muted-foreground flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed px-3 py-4 text-xs dark:border-white/[0.15]"
                       >
                         <Upload className="size-3.5" />
-                        Drop a .md / .zip / .tar.gz file, or click to choose
+                        {t("uploadDropzone")}
                         <input
                           id="skill-file"
                           type="file"
@@ -683,7 +672,7 @@ export function SkillSubmitDialog({
                     step === 1 ? setMode("chooser") : setStep(((step - 1) as 1 | 2))
                   }
                 >
-                  Back
+                  {t("back")}
                 </Button>
                 <Button
                   type="submit"
@@ -694,7 +683,7 @@ export function SkillSubmitDialog({
                     (step === 3 && !canStep3)
                   }
                 >
-                  {step < 3 ? "Continue" : "Submit for review"}
+                  {step < 3 ? t("continue") : t("submitForReview")}
                 </Button>
               </DialogFooter>
             </form>
@@ -705,7 +694,7 @@ export function SkillSubmitDialog({
                 className="text-muted-foreground hover:text-foreground"
                 onClick={() => onOpenChange(false)}
               >
-                See your submissions →
+                {t("seeSubmissions")}
               </Link>
             </div>
           </>
