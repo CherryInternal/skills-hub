@@ -48,7 +48,6 @@ import {
 } from "./skills-sync";
 
 type SortOption = "popular" | "newest" | "rating" | "name_asc";
-type TypeFilter = "all" | SkillCategory;
 
 const CATEGORY_ICONS: Record<SkillCategory, typeof Sparkles> = {
   skill: Sparkles,
@@ -216,7 +215,6 @@ export function SkillsMarketplace() {
   const allSkills =
     sourceTab === "curated" ? curatedSkills : thirdPartySkills;
 
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const [activeDomain, setActiveDomain] = useState<SkillDomain | null>(null);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOption>("popular");
@@ -227,11 +225,10 @@ export function SkillsMarketplace() {
 
   useEffect(() => {
     setVisibleCount(60);
-  }, [sourceTab, typeFilter, activeDomain, search, sort]);
+  }, [sourceTab, activeDomain, search, sort]);
 
   const filtered = useMemo(() => {
     let list = allSkills.slice();
-    if (typeFilter !== "all") list = list.filter((s) => s.category === typeFilter);
     if (activeDomain) list = list.filter((s) => s.domain === activeDomain);
     if (search.trim()) {
       const q = search.trim().toLowerCase();
@@ -264,27 +261,14 @@ export function SkillsMarketplace() {
         break;
     }
     return list;
-  }, [allSkills, typeFilter, activeDomain, search, sort, locale]);
+  }, [allSkills, activeDomain, search, sort, locale]);
 
   const domainCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    const scoped =
-      typeFilter === "all"
-        ? allSkills
-        : allSkills.filter((s) => s.category === typeFilter);
     for (const d of SKILL_DOMAINS) counts[d] = 0;
-    for (const s of scoped) counts[s.domain] = (counts[s.domain] ?? 0) + 1;
+    for (const s of allSkills) counts[s.domain] = (counts[s.domain] ?? 0) + 1;
     return counts;
-  }, [allSkills, typeFilter]);
-
-  const typeCounts = useMemo(
-    () => ({
-      all: allSkills.length,
-      skill: allSkills.filter((s) => s.category === "skill").length,
-      cli: allSkills.filter((s) => s.category === "cli").length,
-    }),
-    [allSkills],
-  );
+  }, [allSkills]);
 
   const openDetail = (s: Skill) => {
     setSelected(s);
@@ -335,12 +319,6 @@ export function SkillsMarketplace() {
     });
     router.push("/submissions");
   };
-
-  const TYPE_TABS: Array<{ key: TypeFilter; label: string; count: number }> = [
-    { key: "all", label: t("typeAll"), count: typeCounts.all },
-    { key: "skill", label: t("typeSkill"), count: typeCounts.skill },
-    { key: "cli", label: t("typeCli"), count: typeCounts.cli },
-  ];
 
   const syncRelative = lastSyncedAt
     ? Math.max(0, Math.round((Date.now() - new Date(lastSyncedAt).getTime()) / 1000))
@@ -410,7 +388,6 @@ export function SkillsMarketplace() {
                 onClick={() => {
                   setSourceTab(key);
                   setActiveDomain(null);
-                  setTypeFilter("all");
                   setSearch("");
                 }}
                 className={cn(
@@ -495,33 +472,6 @@ export function SkillsMarketplace() {
             </aside>
 
             <div className="min-w-0 flex-1">
-              <div className="mb-4 flex flex-wrap items-center gap-1.5">
-                {TYPE_TABS.map(({ key, label, count }) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setTypeFilter(key)}
-                    className={cn(
-                      "inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md border px-3 text-xs font-medium transition-colors",
-                      typeFilter === key
-                        ? "border-foreground text-foreground"
-                        : "border-input text-muted-foreground hover:border-foreground/40 hover:text-foreground",
-                    )}
-                  >
-                    {key === "skill" && (
-                      <Sparkles className="size-3.5" strokeWidth={2} />
-                    )}
-                    {key === "cli" && (
-                      <Terminal className="size-3.5" strokeWidth={2} />
-                    )}
-                    {label}
-                    <span className="text-muted-foreground/70 tabular-nums">
-                      ({count})
-                    </span>
-                  </button>
-                ))}
-              </div>
-
               <div className="mb-6 flex items-center gap-3">
                 <div className="relative flex-1">
                   <Search className="text-muted-foreground absolute top-1/2 left-3 size-3.5 -translate-y-1/2" />
