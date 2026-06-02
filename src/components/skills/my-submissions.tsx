@@ -166,7 +166,7 @@ export function MySubmissions() {
                   >
                     <div className="flex items-center gap-4 px-5 py-4">
                       <Link
-                        href={`/my-submissions/${sub.skill.id}`}
+                        href={`/submissions/${sub.skill.id}`}
                         className="flex min-w-0 flex-1 items-center gap-4"
                       >
                         <div className="min-w-0 flex-1">
@@ -242,7 +242,7 @@ export function MySubmissions() {
                           </button>
                         )}
                         <Link
-                          href={`/my-submissions/${sub.skill.id}`}
+                          href={`/submissions/${sub.skill.id}`}
                           className="hover:bg-muted text-muted-foreground hover:text-foreground inline-flex size-8 items-center justify-center rounded-md"
                           aria-label="View details"
                         >

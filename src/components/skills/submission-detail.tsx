@@ -101,7 +101,7 @@ export function SubmissionDetail({
             device.
           </p>
           <Link
-            href="/my-submissions"
+            href="/submissions"
             className="text-foreground hover:text-foreground/80 mt-2 inline-flex items-center gap-1 text-sm font-medium"
           >
             <ArrowLeft className="size-3.5" />
@@ -126,7 +126,7 @@ export function SubmissionDetail({
     <Section className="px-6 !py-16 sm:px-8">
       <div className="max-w-container mx-auto flex flex-col gap-6 sm:gap-8">
         <Link
-          href="/my-submissions"
+          href="/submissions"
           className="text-muted-foreground hover:text-foreground inline-flex w-fit items-center gap-1 text-xs"
         >
           <ArrowLeft className="size-3" />

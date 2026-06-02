@@ -333,7 +333,7 @@ export function SkillsMarketplace() {
       githubPrUrl: options?.githubPrUrl,
       submissionType: options?.submissionType,
     });
-    router.push("/my-submissions");
+    router.push("/submissions");
   };
 
   const TYPE_TABS: Array<{ key: TypeFilter; label: string; count: number }> = [
@@ -372,7 +372,7 @@ export function SkillsMarketplace() {
             </div>
             <div className="animate-appear flex items-center gap-2 opacity-0 delay-100">
               <Link
-                href="/my-submissions"
+                href="/submissions"
                 className="text-muted-foreground hover:text-foreground inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm"
               >
                 <Inbox className="size-4" />
