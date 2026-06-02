@@ -12,7 +12,6 @@ import {
   Plus,
   Layers,
   Inbox,
-  ExternalLink,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Section } from "@/components/ui/section";
 import { cn } from "@/lib/utils";
+import { api } from "~/trpc/react";
 import {
   SKILL_DOMAINS,
   pickDomainLabel,
@@ -34,16 +34,7 @@ import {
 } from "./skills-data";
 import { SkillSubmitDialog } from "./skill-submit-dialog";
 import { SkillDetailSheet } from "./skill-detail-sheet";
-import {
-  appendSubmission,
-  loadListings,
-  loadThirdPartySkills,
-} from "./skills-storage";
-import {
-  applySyncToSkill,
-  dedupThirdParty,
-  maybeRunSync,
-} from "./skills-sync";
+import { appendSubmission } from "./skills-storage";
 
 type SortOption = "popular" | "newest" | "rating" | "name_asc";
 
@@ -76,7 +67,6 @@ function SkillCard({
   const name = pickLocale(skill.name, locale);
   const description = pickLocale(skill.description, locale);
   const domainLabel = pickDomainLabel(skill.domain, locale);
-  const feedCount = skill.feeds?.length ?? (skill.sourceFeed ? 1 : 0);
 
   return (
     <button
@@ -132,27 +122,10 @@ function SkillCard({
       </div>
 
       <div className="border-border/60 text-muted-foreground flex items-center justify-between border-t px-5 py-2.5 text-xs dark:border-white/[0.08]">
-        {skill.source === "third_party" && skill.sourceFeed ? (
-          <span className="text-muted-foreground/80 flex min-w-0 items-center gap-1 truncate">
-            <ExternalLink className="size-3 shrink-0" />
-            <span className="truncate font-[Menlo,monospace] text-[10px]">
-              {skill.sourceFeed}
-            </span>
-            {feedCount > 1 && (
-              <span
-                className="bg-muted text-foreground/80 ml-1 shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium"
-                title={t("availableOn", { count: feedCount })}
-              >
-                +{feedCount - 1}
-              </span>
-            )}
-          </span>
-        ) : (
-          <span className="flex items-center gap-1">
-            <Download className="size-3" />
-            {formatInstalls(skill.installs)}
-          </span>
-        )}
+        <span className="flex items-center gap-1">
+          <Download className="size-3" />
+          {formatInstalls(skill.installs)}
+        </span>
         <button
           type="button"
           onClick={(e) => {
@@ -178,35 +151,8 @@ export function SkillsMarketplace() {
   const locale = useLocale();
   const t = useTranslations("marketplace");
 
-  const [curatedSkills, setCuratedSkills] = useState<Skill[]>([]);
-  const [thirdPartySkills, setThirdPartySkills] = useState<Skill[]>([]);
-  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
-  const [sourceTab, setSourceTab] = useState<"curated" | "third_party">(
-    "curated",
-  );
-
-  useEffect(() => {
-    const load = () => {
-      const syncState = maybeRunSync();
-      setLastSyncedAt(syncState.lastRunAt);
-      setCuratedSkills(
-        loadListings()
-          .filter((l) => l.published)
-          .map((l) => applySyncToSkill(l.skill, syncState)),
-      );
-      setThirdPartySkills(
-        dedupThirdParty(loadThirdPartySkills()).map((s) =>
-          applySyncToSkill(s, syncState),
-        ),
-      );
-    };
-    load();
-    const interval = setInterval(load, 30_000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const allSkills =
-    sourceTab === "curated" ? curatedSkills : thirdPartySkills;
+  const skillsQuery = api.skill.list.useQuery({ limit: 200 });
+  const allSkills = (skillsQuery.data?.items ?? []) as Skill[];
 
   const [activeDomain, setActiveDomain] = useState<SkillDomain | null>(null);
   const [search, setSearch] = useState("");
@@ -218,7 +164,7 @@ export function SkillsMarketplace() {
 
   useEffect(() => {
     setVisibleCount(60);
-  }, [sourceTab, activeDomain, search, sort]);
+  }, [activeDomain, search, sort]);
 
   const filtered = useMemo(() => {
     let list = allSkills.slice();
@@ -313,16 +259,6 @@ export function SkillsMarketplace() {
     router.push("/submissions");
   };
 
-  const syncRelative = lastSyncedAt
-    ? Math.max(0, Math.round((Date.now() - new Date(lastSyncedAt).getTime()) / 1000))
-    : null;
-  const syncLabel =
-    syncRelative === null
-      ? ""
-      : syncRelative < 60
-        ? t("timeAgoSeconds", { seconds: syncRelative })
-        : t("timeAgoMinutes", { minutes: Math.floor(syncRelative / 60) });
-
   return (
     <>
       <Section className="px-6 !py-16 sm:px-8">
@@ -335,11 +271,6 @@ export function SkillsMarketplace() {
               <p className="animate-appear text-muted-foreground text-sm font-normal opacity-0 delay-100">
                 {t("subtitle")}
               </p>
-              {syncLabel && (
-                <p className="text-muted-foreground/60 text-[10px]">
-                  {t("syncStatus", { when: syncLabel })}
-                </p>
-              )}
             </div>
             <div className="animate-appear flex items-center gap-2 opacity-0 delay-100">
               <Link
@@ -358,55 +289,6 @@ export function SkillsMarketplace() {
               </Button>
             </div>
           </div>
-
-          {/* Source tabs: Curated / Third-party */}
-          <div className="animate-appear border-border/60 flex items-center gap-1 border-b dark:border-white/[0.08] opacity-0 delay-150">
-            {(
-              [
-                {
-                  key: "curated" as const,
-                  label: t("tabCurated"),
-                  count: curatedSkills.length,
-                },
-                {
-                  key: "third_party" as const,
-                  label: t("tabThirdParty"),
-                  count: thirdPartySkills.length,
-                },
-              ]
-            ).map(({ key, label, count }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => {
-                  setSourceTab(key);
-                  setActiveDomain(null);
-                  setSearch("");
-                }}
-                className={cn(
-                  "relative -mb-px inline-flex h-10 cursor-pointer items-center gap-1.5 border-b-2 px-3 text-sm font-medium transition-colors",
-                  sourceTab === key
-                    ? "border-foreground text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {label}
-                <span className="text-muted-foreground/70 tabular-nums text-xs">
-                  {count >= 1000 ? `${(count / 1000).toFixed(1)}K` : count}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Third-party warning banner */}
-          {sourceTab === "third_party" && (
-            <div className="border-amber-500/30 bg-amber-500/5 text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200 rounded-xl border px-4 py-3 text-xs leading-relaxed">
-              <strong className="font-semibold">
-                {t("thirdPartyWarningTitle")}
-              </strong>{" "}
-              — {t("thirdPartyWarningBody")}
-            </div>
-          )}
 
           <div className="animate-appear flex w-full gap-8 opacity-0 delay-200">
             <aside className="hidden w-56 shrink-0 lg:block">
@@ -497,7 +379,11 @@ export function SkillsMarketplace() {
                 {activeDomain ? ` · ${pickDomainLabel(activeDomain, locale)}` : ""}
               </div>
 
-              {filtered.length > 0 ? (
+              {skillsQuery.isLoading ? (
+                <div className="text-muted-foreground py-20 text-center">
+                  {t("loading")}
+                </div>
+              ) : filtered.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                     {filtered.slice(0, visibleCount).map((skill) => (

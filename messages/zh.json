@@ -20,6 +20,7 @@
     "itemCount": "{count} 条",
     "loadMore": "加载更多",
     "showingOf": "已显示 {visible} / {total}",
+    "loading": "正在加载 skill…",
     "emptyTitle": "没有符合当前筛选条件的 skill。",
     "thirdPartyWarningTitle": "社区来源 — 请自行甄别",
     "thirdPartyWarningBody": "三方资源来自外部社区源聚合，CherryIN 不对其安全性或质量负责。建议先查看来源链接、在沙箱环境中试运行。",

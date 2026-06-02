@@ -1,3 +1,4 @@
+import { skillRouter } from "~/server/api/routers/skill";
 import {
   createCallerFactory,
   createTRPCRouter,
@@ -7,11 +8,11 @@ import {
 /**
  * This is the primary router for your server.
  *
- * Marketplace routers (skills, submissions, listings, …) will be added here
- * as the backend data layer is built.
+ * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
   health: publicProcedure.query(() => ({ ok: true })),
+  skill: skillRouter,
 });
 
 // export type definition of API
