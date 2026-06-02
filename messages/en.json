@@ -20,6 +20,7 @@
     "itemCount": "{count, plural, =0 {0 items} one {# item} other {# items}}",
     "loadMore": "Load more",
     "showingOf": "Showing {visible} of {total}",
+    "loading": "Loading skills…",
     "emptyTitle": "No skills match the current filter.",
     "thirdPartyWarningTitle": "Community sources — verify before using",
     "thirdPartyWarningBody": "Third-party skills are aggregated from external feeds. CherryIN does not vet them. Read the source link and consider running in a sandbox first.",

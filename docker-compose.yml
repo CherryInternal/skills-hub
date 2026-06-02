@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: skills-hub-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: skillshub
+      POSTGRES_PASSWORD: skillshub_dev
+      POSTGRES_DB: skillshub
+    ports:
+      - "5433:5432"
+    volumes:
+      - skillshub_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skillshub"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+volumes:
+  skillshub_pgdata:

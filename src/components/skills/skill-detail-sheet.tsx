@@ -36,11 +36,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  SKILLS,
-  pickLocale,
-  type Skill,
-} from "./skills-data";
+import { pickLocale, type Skill } from "./skills-data";
 import { useLocale, useTranslations } from "next-intl";
 
 interface SkillDetailSheetProps {
@@ -336,12 +332,6 @@ export function SkillDetailSheet({
   const reviews = buildReviews(current);
   const totalReviews = Math.max(3, Math.floor(current.installs / 50));
   const contributors = Math.max(1, Math.floor(current.installs / 2000) + 1);
-  const related = SKILLS.filter(
-    (s) => s.id !== current.id && s.domain === current.domain,
-  ).slice(0, 4);
-  const otherBySameAuthor = SKILLS.filter(
-    (s) => s.id !== current.id && s.author === current.author,
-  ).slice(0, 3);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
