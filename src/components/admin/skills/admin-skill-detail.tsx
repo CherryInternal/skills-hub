@@ -105,7 +105,7 @@ export function AdminSkillDetail({
       <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
         <h1 className="text-xl font-semibold">{t("notFoundTitle")}</h1>
         <Link
-          href="/admin/skills"
+          href="/admin"
           className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
         >
           <ArrowLeft className="size-3.5" />
@@ -145,7 +145,7 @@ export function AdminSkillDetail({
   return (
     <div className="flex flex-col gap-5">
       <Link
-        href="/admin/skills"
+        href="/admin"
         className="text-muted-foreground hover:text-foreground inline-flex w-fit items-center gap-1 text-xs"
       >
         <ArrowLeft className="size-3" />

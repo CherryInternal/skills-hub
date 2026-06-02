@@ -89,7 +89,7 @@ export function MySubmissions() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex flex-col gap-1.5">
             <Link
-              href="/skills_marketplace"
+              href="/"
               className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs"
             >
               <ArrowLeft className="size-3" />
@@ -103,7 +103,7 @@ export function MySubmissions() {
             </p>
           </div>
           <Link
-            href="/skills_marketplace"
+            href="/"
             className="bg-foreground text-background hover:bg-foreground/90 inline-flex h-9 items-center justify-center gap-1.5 rounded-lg px-4 text-sm font-medium"
           >
             Submit another →
@@ -145,7 +145,7 @@ export function MySubmissions() {
               </p>
             </div>
             <Link
-              href="/skills_marketplace"
+              href="/"
               className="text-foreground hover:text-foreground/80 mt-1 inline-flex items-center gap-1 text-xs font-medium"
             >
               Go to marketplace
@@ -166,7 +166,7 @@ export function MySubmissions() {
                   >
                     <div className="flex items-center gap-4 px-5 py-4">
                       <Link
-                        href={`/skills_marketplace/my-submissions/${sub.skill.id}`}
+                        href={`/my-submissions/${sub.skill.id}`}
                         className="flex min-w-0 flex-1 items-center gap-4"
                       >
                         <div className="min-w-0 flex-1">
@@ -242,7 +242,7 @@ export function MySubmissions() {
                           </button>
                         )}
                         <Link
-                          href={`/skills_marketplace/my-submissions/${sub.skill.id}`}
+                          href={`/my-submissions/${sub.skill.id}`}
                           className="hover:bg-muted text-muted-foreground hover:text-foreground inline-flex size-8 items-center justify-center rounded-md"
                           aria-label="View details"
                         >
