@@ -181,10 +181,6 @@ export function AdminSkillDetail({
               <span className="text-muted-foreground/30">·</span>
               <span>{submission.skill.domain}</span>
               <span className="text-muted-foreground/30">·</span>
-              <span>
-                {submission.skill.category === "skill" ? "Skill" : "CLI"}
-              </span>
-              <span className="text-muted-foreground/30">·</span>
               <span>{t("submittedAt", { date: fmtDateTime(submission.submittedAt) })}</span>
             </div>
           </div>

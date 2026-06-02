@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Search, Store, Sparkles, Terminal, Pencil, Trash2 } from "lucide-react";
+import { Search, Store, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -249,7 +249,6 @@ export function AdminSkillsListings() {
             <TableHeader>
               <TableRow>
                 <TableHead>{t("colName")}</TableHead>
-                <TableHead>{t("colCategory")}</TableHead>
                 <TableHead>{t("colAuthor")}</TableHead>
                 <TableHead>{t("colSource")}</TableHead>
                 <TableHead className="text-right">{t("colInstalls")}</TableHead>
@@ -260,14 +259,12 @@ export function AdminSkillsListings() {
             </TableHeader>
             <TableBody>
               {filtered.map((item) => {
-                const CategoryIcon =
-                  item.skill.category === "skill" ? Sparkles : Terminal;
                 return (
                   <TableRow key={`${item.source}-${item.skill.id}`}>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <div className="bg-muted text-foreground flex size-8 shrink-0 items-center justify-center rounded-md">
-                          <CategoryIcon className="size-4" strokeWidth={2} />
+                          <Store className="size-4" strokeWidth={2} />
                         </div>
                         <div className="min-w-0">
                           <div className="text-foreground truncate text-sm font-semibold tracking-tight">
@@ -281,9 +278,6 @@ export function AdminSkillsListings() {
                           </div>
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
-                      {item.skill.category === "skill" ? "Skill" : "CLI"}
                     </TableCell>
                     <TableCell className="text-muted-foreground text-xs">
                       {item.skill.author}

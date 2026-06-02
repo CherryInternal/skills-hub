@@ -1,5 +1,3 @@
-export type SkillCategory = "skill" | "cli";
-
 export type SkillSource = "curated" | "third_party";
 
 export const SKILL_DOMAINS = [
@@ -31,7 +29,6 @@ export function pickLocale(value: LocalizedString | undefined, locale: string): 
 export interface Skill {
   id: string;
   name: LocalizedString;
-  category: SkillCategory;
   domain: SkillDomain;
   author: string;
   version: string;
@@ -80,7 +77,6 @@ export const SKILLS: Skill[] = [
   {
     id: "loupe-annotator",
     name: "Loupe Annotator",
-    category: "skill",
     domain: "Developer Tools",
     author: "SiinXu",
     version: "0.2.0",
@@ -98,7 +94,6 @@ export const SKILLS: Skill[] = [
   {
     id: "prd-creator",
     name: "PRD Creator",
-    category: "skill",
     domain: "Productivity",
     author: "CherryIN",
     version: "1.4.2",
@@ -115,7 +110,6 @@ export const SKILLS: Skill[] = [
   {
     id: "data-analyst",
     name: "Data Analyst",
-    category: "skill",
     domain: "Data & Analytics",
     author: "CherryIN",
     version: "2.1.0",
@@ -132,7 +126,6 @@ export const SKILLS: Skill[] = [
   {
     id: "web-designer",
     name: "Web Designer",
-    category: "skill",
     domain: "Design",
     author: "CherryIN",
     version: "0.9.0",
@@ -150,7 +143,6 @@ export const SKILLS: Skill[] = [
   {
     id: "art-director",
     name: "Art Director",
-    category: "skill",
     domain: "Design",
     author: "CherryIN",
     version: "1.1.0",
@@ -167,7 +159,6 @@ export const SKILLS: Skill[] = [
   {
     id: "speed-reader",
     name: "Speed Reader",
-    category: "skill",
     domain: "Productivity",
     author: "CherryIN",
     version: "0.7.0",
@@ -184,7 +175,6 @@ export const SKILLS: Skill[] = [
   {
     id: "transcript-to-content",
     name: "Transcript to Content",
-    category: "skill",
     domain: "Productivity",
     author: "CherryIN",
     version: "1.2.0",
@@ -202,7 +192,6 @@ export const SKILLS: Skill[] = [
   {
     id: "enterprise-prd",
     name: "Enterprise PRD",
-    category: "skill",
     domain: "Documentation",
     author: "CherryIN",
     version: "0.8.0",
@@ -219,7 +208,6 @@ export const SKILLS: Skill[] = [
   {
     id: "claude-api",
     name: "Claude API Helper",
-    category: "skill",
     domain: "AI & Agents",
     author: "Anthropic",
     version: "0.5.0",
@@ -236,7 +224,6 @@ export const SKILLS: Skill[] = [
   {
     id: "magazine-web-ppt",
     name: "Magazine Web PPT",
-    category: "skill",
     domain: "Design",
     author: "CherryIN",
     version: "0.6.0",
@@ -253,7 +240,6 @@ export const SKILLS: Skill[] = [
   {
     id: "repo-onboard",
     name: "Repo Onboard",
-    category: "skill",
     domain: "Developer Tools",
     author: "CherryIN",
     version: "1.0.0",
@@ -270,7 +256,6 @@ export const SKILLS: Skill[] = [
   {
     id: "cherry-ui-review",
     name: "Cherry UI Review",
-    category: "skill",
     domain: "Design",
     author: "CherryIN",
     version: "0.4.0",
@@ -287,7 +272,6 @@ export const SKILLS: Skill[] = [
   {
     id: "cherryin-cli",
     name: "CherryIN CLI",
-    category: "cli",
     domain: "Developer Tools",
     author: "CherryIN",
     version: "0.5.3",
@@ -304,7 +288,6 @@ export const SKILLS: Skill[] = [
   {
     id: "lark-cli",
     name: "Lark CLI",
-    category: "cli",
     domain: "Communication",
     author: "CherryIN",
     version: "1.8.0",
@@ -321,7 +304,6 @@ export const SKILLS: Skill[] = [
   {
     id: "claude-code-setup",
     name: "Claude Code Setup",
-    category: "cli",
     domain: "AI & Agents",
     author: "Anthropic",
     version: "0.3.1",
@@ -338,7 +320,6 @@ export const SKILLS: Skill[] = [
   {
     id: "lark-base-cli",
     name: "Lark Base CLI",
-    category: "cli",
     domain: "Data & Analytics",
     author: "CherryIN",
     version: "0.9.0",
@@ -355,7 +336,6 @@ export const SKILLS: Skill[] = [
   {
     id: "schedule-runner",
     name: "Schedule Runner",
-    category: "cli",
     domain: "Automation",
     author: "CherryIN",
     version: "0.2.0",
@@ -374,7 +354,6 @@ export const SKILLS: Skill[] = [
   {
     id: "agent-trace",
     name: "Agent Trace",
-    category: "skill",
     domain: "AI & Agents",
     author: "linw_ai",
     version: "0.3.1",
@@ -392,7 +371,6 @@ export const SKILLS: Skill[] = [
   {
     id: "mcp-doctor",
     name: "MCP Doctor",
-    category: "skill",
     domain: "AI & Agents",
     author: "kazuya.matsui",
     version: "1.0.0",
@@ -410,7 +388,6 @@ export const SKILLS: Skill[] = [
   {
     id: "prompt-shield",
     name: "Prompt Shield",
-    category: "skill",
     domain: "AI & Agents",
     author: "OpenRail",
     version: "0.7.4",
@@ -428,7 +405,6 @@ export const SKILLS: Skill[] = [
   {
     id: "context-trim",
     name: "Context Trim",
-    category: "skill",
     domain: "AI & Agents",
     author: "rui.huang",
     version: "0.5.2",
@@ -446,7 +422,6 @@ export const SKILLS: Skill[] = [
   {
     id: "agentkit-templates",
     name: "AgentKit Templates",
-    category: "skill",
     domain: "AI & Agents",
     author: "Anthropic",
     version: "2.0.0",
@@ -466,7 +441,6 @@ export const SKILLS: Skill[] = [
   {
     id: "inbox-zero",
     name: "Inbox Zero",
-    category: "skill",
     domain: "Productivity",
     author: "morgan.chen",
     version: "0.4.0",
@@ -483,7 +457,6 @@ export const SKILLS: Skill[] = [
   {
     id: "standup-bot",
     name: "Standup Bot",
-    category: "skill",
     domain: "Productivity",
     author: "jamie.park",
     version: "1.2.0",
@@ -501,7 +474,6 @@ export const SKILLS: Skill[] = [
   {
     id: "weekly-review",
     name: "Weekly Review",
-    category: "skill",
     domain: "Productivity",
     author: "ana.silva",
     version: "0.2.0",
@@ -519,7 +491,6 @@ export const SKILLS: Skill[] = [
   {
     id: "focus-timer",
     name: "Focus Timer",
-    category: "cli",
     domain: "Productivity",
     author: "ricky_zhou",
     version: "0.9.0",
@@ -539,7 +510,6 @@ export const SKILLS: Skill[] = [
   {
     id: "diff-reviewer",
     name: { en: "Diff Reviewer", zh: "Diff 评审员" },
-    category: "skill",
     domain: "Developer Tools",
     author: "CherryIN",
     version: "1.3.0",
@@ -562,7 +532,6 @@ export const SKILLS: Skill[] = [
   {
     id: "type-fix",
     name: "Type Fix",
-    category: "skill",
     domain: "Developer Tools",
     author: "lin.f",
     version: "0.6.0",
@@ -580,7 +549,6 @@ export const SKILLS: Skill[] = [
   {
     id: "gh-pr-skim",
     name: "GH PR Skim",
-    category: "cli",
     domain: "Developer Tools",
     author: "tarek_b",
     version: "0.3.0",
@@ -598,7 +566,6 @@ export const SKILLS: Skill[] = [
   {
     id: "test-coverage-coach",
     name: "Test Coverage Coach",
-    category: "skill",
     domain: "Developer Tools",
     author: "elena.kov",
     version: "0.5.0",
@@ -616,7 +583,6 @@ export const SKILLS: Skill[] = [
   {
     id: "env-diff",
     name: "Env Diff",
-    category: "cli",
     domain: "Developer Tools",
     author: "huang.q",
     version: "0.4.1",
@@ -634,7 +600,6 @@ export const SKILLS: Skill[] = [
   {
     id: "perf-budget",
     name: "Perf Budget",
-    category: "skill",
     domain: "Developer Tools",
     author: "Anthropic",
     version: "0.8.0",
@@ -654,7 +619,6 @@ export const SKILLS: Skill[] = [
   {
     id: "frontend-design",
     name: { en: "Frontend Design", zh: "前端设计" },
-    category: "skill",
     domain: "Design",
     author: "Anthropic",
     version: "1.6.0",
@@ -677,7 +641,6 @@ export const SKILLS: Skill[] = [
   {
     id: "icon-finder",
     name: "Icon Finder",
-    category: "skill",
     domain: "Design",
     author: "sora.kim",
     version: "0.3.0",
@@ -695,7 +658,6 @@ export const SKILLS: Skill[] = [
   {
     id: "color-palette-extractor",
     name: "Color Palette Extractor",
-    category: "skill",
     domain: "Design",
     author: "studio_fern",
     version: "0.2.0",
@@ -712,7 +674,6 @@ export const SKILLS: Skill[] = [
   {
     id: "shadcn-composer",
     name: "shadcn Composer",
-    category: "skill",
     domain: "Design",
     author: "vince_tao",
     version: "1.0.0",
@@ -732,7 +693,6 @@ export const SKILLS: Skill[] = [
   {
     id: "sql-explain",
     name: "SQL Explain",
-    category: "skill",
     domain: "Data & Analytics",
     author: "alex.lin",
     version: "0.6.0",
@@ -749,7 +709,6 @@ export const SKILLS: Skill[] = [
   {
     id: "kpi-dashboard",
     name: "KPI Dashboard",
-    category: "skill",
     domain: "Data & Analytics",
     author: "CherryIN",
     version: "1.1.0",
@@ -767,7 +726,6 @@ export const SKILLS: Skill[] = [
   {
     id: "cohort-builder",
     name: "Cohort Builder",
-    category: "skill",
     domain: "Data & Analytics",
     author: "lena.r",
     version: "0.4.0",
@@ -785,7 +743,6 @@ export const SKILLS: Skill[] = [
   {
     id: "csv-clean",
     name: "CSV Clean",
-    category: "cli",
     domain: "Data & Analytics",
     author: "saito.h",
     version: "0.5.2",
@@ -805,7 +762,6 @@ export const SKILLS: Skill[] = [
   {
     id: "lark-whiteboard-mcp",
     name: "Lark Whiteboard MCP",
-    category: "cli",
     domain: "Communication",
     author: "CherryIN",
     version: "0.8.0",
@@ -823,7 +779,6 @@ export const SKILLS: Skill[] = [
   {
     id: "slack-cleanup",
     name: "Slack Cleanup",
-    category: "skill",
     domain: "Communication",
     author: "minh.tran",
     version: "0.3.0",
@@ -841,7 +796,6 @@ export const SKILLS: Skill[] = [
   {
     id: "meeting-notes",
     name: { en: "Meeting Notes", zh: "会议纪要" },
-    category: "skill",
     domain: "Communication",
     author: "CherryIN",
     version: "1.5.0",
@@ -866,7 +820,6 @@ export const SKILLS: Skill[] = [
   {
     id: "changelog-from-prs",
     name: "Changelog from PRs",
-    category: "skill",
     domain: "Documentation",
     author: "yusuke.h",
     version: "0.6.0",
@@ -884,7 +837,6 @@ export const SKILLS: Skill[] = [
   {
     id: "api-doc-from-types",
     name: "API Doc from Types",
-    category: "skill",
     domain: "Documentation",
     author: "kira.li",
     version: "0.4.0",
@@ -902,7 +854,6 @@ export const SKILLS: Skill[] = [
   {
     id: "readme-grader",
     name: "README Grader",
-    category: "skill",
     domain: "Documentation",
     author: "ozge_kara",
     version: "0.2.0",
@@ -922,7 +873,6 @@ export const SKILLS: Skill[] = [
   {
     id: "browser-runner",
     name: "Browser Runner",
-    category: "skill",
     domain: "Automation",
     author: "tom.allen",
     version: "0.7.0",
@@ -940,7 +890,6 @@ export const SKILLS: Skill[] = [
   {
     id: "github-action-claude",
     name: { en: "GitHub Action: Claude", zh: "GitHub Action：Claude" },
-    category: "cli",
     domain: "Automation",
     author: "Anthropic",
     version: "1.2.0",
@@ -963,7 +912,6 @@ export const SKILLS: Skill[] = [
   {
     id: "n8n-claude",
     name: "n8n × Claude Nodes",
-    category: "skill",
     domain: "Automation",
     author: "ricardo_v",
     version: "0.4.0",
@@ -981,7 +929,6 @@ export const SKILLS: Skill[] = [
   {
     id: "feishu-bot-kit",
     name: "Feishu Bot Kit",
-    category: "cli",
     domain: "Automation",
     author: "wang.haoran",
     version: "0.9.0",
@@ -1001,7 +948,6 @@ export const SKILLS: Skill[] = [
   {
     id: "license-checker",
     name: "License Checker",
-    category: "cli",
     domain: "Other",
     author: "nadia.k",
     version: "0.3.0",
@@ -1019,7 +965,6 @@ export const SKILLS: Skill[] = [
   {
     id: "i18n-extractor",
     name: "i18n Extractor",
-    category: "skill",
     domain: "Other",
     author: "CherryIN",
     version: "0.7.0",
@@ -1037,7 +982,6 @@ export const SKILLS: Skill[] = [
   {
     id: "screenshot-redactor",
     name: "Screenshot Redactor",
-    category: "cli",
     domain: "Other",
     author: "deepa_v",
     version: "0.2.0",
@@ -1055,7 +999,6 @@ export const SKILLS: Skill[] = [
   {
     id: "wandb-runs",
     name: "wandb Runs",
-    category: "skill",
     domain: "Other",
     author: "alex.l",
     version: "0.3.0",
@@ -1087,36 +1030,36 @@ const THIRD_PARTY_FEEDS = [
 ] as const;
 
 export const THIRD_PARTY_SKILLS: Skill[] = [
-  { id: "tp-resume-builder", name: "tailored-resume-generator", category: "skill", domain: "Productivity", author: "composiohq", version: "1.0.2", description: "Analyze JDs and tailor a polished, ATS-friendly resume.", longDescription: "Extracts required skills, qualifications, and keywords from job descriptions; reprioritizes your experience and produces ATS-friendly, role-specific resumes.", tags: ["resume", "ATS", "career"], installs: 42_900, rating: 4.0, install: "npx -y @lobehub/market-cli skills install composiohq-awesome-claude-skills-tailored-resume-generator --agent claude-code", docsUrl: "https://lobehub.com/skills/composiohq-awesome-claude-skills-tailored-resume-generator", sourceUrl: "https://lobehub.com/skills/composiohq-awesome-claude-skills-tailored-resume-generator", releaseDate: "2026-03-11", source: "third_party", sourceFeed: "lobehub.com/skills" },
-  { id: "tp-canvas-design", name: "canvas-design", category: "skill", domain: "Design", author: "composiohq", version: "0.4.0", description: "Generate a design philosophy then a PDF/PNG expressing it.", longDescription: "Two-phase design generation: first defines an aesthetic direction (e.g. 'Brutalist Joy'), then produces production-ready PDFs or PNGs.", tags: ["design", "brand", "PDF"], installs: 18_300, rating: 4.2, install: "npx -y @lobehub/market-cli skills install composiohq-awesome-claude-skills-canvas-design", docsUrl: "https://lobehub.com/skills/composiohq-awesome-claude-skills-canvas-design", sourceUrl: "https://lobehub.com/skills/composiohq-awesome-claude-skills-canvas-design", releaseDate: "2026-04-02", source: "third_party", sourceFeed: "lobehub.com/skills" },
-  { id: "tp-landing-page-design", name: "landing-page-design", category: "skill", domain: "Design", author: "inferen-sh", version: "0.7.1", description: "Multi-library landing page generator with shadcn + Aceternity.", longDescription: "Composes landing pages from shadcn/ui, Aceternity UI, Magic UI, and 21st.dev components. Includes Next.js routing skeleton, i18n hooks, and responsive presets.", tags: ["landing", "shadcn", "marketing"], installs: 9_870, rating: 4.4, install: "npx -y @lobehub/market-cli skills install inferen-sh-skills-landing-page-design", docsUrl: "https://lobehub.com/skills/inferen-sh-skills-landing-page-design", sourceUrl: "https://lobehub.com/skills/inferen-sh-skills-landing-page-design", releaseDate: "2026-04-25", source: "third_party", sourceFeed: "lobehub.com/skills" },
-  { id: "tp-email-design", name: "email-design", category: "skill", domain: "Design", author: "inferen-sh", version: "0.3.0", description: "Designer-grade transactional and marketing email templates.", longDescription: "Generates MJML / HTML email templates with mobile-first design, dark-mode aware tokens, and bulletproof rendering checks across Outlook, Apple Mail, Gmail.", tags: ["email", "MJML", "marketing"], installs: 5_410, rating: 4.3, install: "npx -y @lobehub/market-cli skills install inferen-sh-skills-email-design", docsUrl: "https://lobehub.com/skills/inferen-sh-skills-email-design", sourceUrl: "https://lobehub.com/skills/inferen-sh-skills-email-design", releaseDate: "2026-03-17", source: "third_party", sourceFeed: "lobehub.com/skills" },
-  { id: "tp-impeccable-layout", name: "impeccable-layout", category: "skill", domain: "Design", author: "pbakaus", version: "0.2.0", description: "Diagnose and fix subtle spacing/hierarchy issues in UIs.", longDescription: "Runs the squint test, detects monotonous card grids and arbitrary spacing values, then applies consistent spacing systems and proper layout tools.", tags: ["UI", "spacing", "hierarchy"], installs: 3_220, rating: 4.5, install: "npx -y @lobehub/market-cli skills install pbakaus-impeccable-layout", docsUrl: "https://lobehub.com/skills/pbakaus-impeccable-layout", sourceUrl: "https://lobehub.com/skills/pbakaus-impeccable-layout", releaseDate: "2026-04-12", source: "third_party", sourceFeed: "lobehub.com/skills" },
-  { id: "tp-frontend-design-anthropic", name: "frontend-design (anthropic mirror)", category: "skill", domain: "Design", author: "anthropics", version: "1.6.0", description: "Anti-AI-slop frontend design guidance (community mirror).", longDescription: "Community mirror of Anthropic's frontend-design skill. Forces specific design direction with distinctive typography and contextual visual effects.", tags: ["frontend", "design system"], installs: 277_410, rating: 4.9, install: "claude skill install anthropics/frontend-design", docsUrl: "https://github.com/anthropics/skills/tree/main/frontend-design", sourceUrl: "https://github.com/anthropics/skills/tree/main/frontend-design", githubRepoUrl: "https://github.com/anthropics/skills", releaseDate: "2026-04-17", source: "third_party", sourceFeed: "github.com/awesome-claude-skills" },
-  { id: "tp-git-pr-skill", name: "claude-git-pr-skill", category: "skill", domain: "Developer Tools", author: "aidankinzett", version: "0.6.0", description: "Professional GitHub PR review with pending-review workflow.", longDescription: "Streamlines PR reviews via gh CLI: pending reviews, code suggestions, user approval workflow, inline comments, ticket tracking.", tags: ["PR", "GitHub", "code review"], installs: 12_640, rating: 4.6, install: "git clone https://github.com/aidankinzett/claude-git-pr-skill", docsUrl: "https://github.com/aidankinzett/claude-git-pr-skill", sourceUrl: "https://github.com/aidankinzett/claude-git-pr-skill", githubRepoUrl: "https://github.com/aidankinzett/claude-git-pr-skill", releaseDate: "2026-02-26", source: "third_party", sourceFeed: "github.com/awesome-claude-skills" },
-  { id: "tp-pr-reviewer-skill", name: "pr-reviewer-skill", category: "skill", domain: "Developer Tools", author: "SpillwaveSolutions", version: "0.4.0", description: "Multi-criteria PR reviewer (security/testing/maintainability).", longDescription: "Automates gh CLI data collection, analyzes against industry-standard criteria (security, testing, maintainability), generates structured review files, posts feedback with approval workflow.", tags: ["PR", "security", "review"], installs: 4_310, rating: 4.4, install: "git clone https://github.com/SpillwaveSolutions/pr-reviewer-skill", docsUrl: "https://github.com/SpillwaveSolutions/pr-reviewer-skill", sourceUrl: "https://github.com/SpillwaveSolutions/pr-reviewer-skill", githubRepoUrl: "https://github.com/SpillwaveSolutions/pr-reviewer-skill", releaseDate: "2026-03-08", source: "third_party", sourceFeed: "github.com/awesome-claude-skills" },
-  { id: "tp-caveman", name: "caveman", category: "skill", domain: "Other", author: "anonymous", version: "0.0.1", description: "Talk to Claude like a caveman. For fun.", longDescription: "Forces Claude to communicate exclusively in caveman-speak. Surprisingly popular for stress-testing prompt sensitivity.", tags: ["fun", "novelty"], installs: 145_600, rating: 4.7, install: "npx claudeskills install caveman", docsUrl: "https://claudeskills.info/skills/caveman", sourceUrl: "https://claudeskills.info/skills/caveman", releaseDate: "2026-01-30", source: "third_party", sourceFeed: "claudeskills.info" },
-  { id: "tp-ceo-advisor", name: "ceo-advisor", category: "skill", domain: "Productivity", author: "AlirezaRezvani", version: "0.3.0", description: "Executive leadership guidance for strategic decisions.", longDescription: "Strategic decision-making coach: organizational development, stakeholder management, capital allocation, hiring frameworks.", tags: ["leadership", "strategy"], installs: 2_180, rating: 4.1, install: "npx -y @lobehub/market-cli skills install alirezarezvani-claude-skills-ceo-advisor", docsUrl: "https://lobehub.com/skills/alirezarezvani-claude-skills-ceo-advisor", sourceUrl: "https://lobehub.com/skills/alirezarezvani-claude-skills-ceo-advisor", releaseDate: "2026-05-17", source: "third_party", sourceFeed: "lobehub.com/skills" },
-  { id: "tp-dev-growth", name: "developer-growth-advisor", category: "skill", domain: "Productivity", author: "AlirezaRezvani", version: "0.2.1", description: "Career growth coaching for software engineers.", longDescription: "Personalized career growth plans with skill-tree gaps, deliberate practice routines, and quarterly OKR drafts.", tags: ["career", "growth"], installs: 1_604, rating: 4.0, install: "npx -y @lobehub/market-cli skills install alirezarezvani-claude-skills-developer-growth-advisor", docsUrl: "https://lobehub.com/skills/alirezarezvani-claude-skills-developer-growth-advisor", sourceUrl: "https://lobehub.com/skills/alirezarezvani-claude-skills-developer-growth-advisor", releaseDate: "2026-05-16", source: "third_party", sourceFeed: "lobehub.com/skills" },
-  { id: "tp-surprise-me", name: "surprise-me", category: "skill", domain: "Other", author: "lijiamou", version: "0.1.0", description: "Random Claude chat history → unexpected 'wow' experience.", longDescription: "Reads a chat history, picks an unexpected angle, and produces a 'wow' moment by dynamically discovering creative connections.", tags: ["novelty", "creativity"], installs: 1_312, rating: 4.0, install: "npx -y @lobehub/market-cli skills install lijiamou-skills-surprise-me", docsUrl: "https://lobehub.com/skills/lijiamou-skills-surprise-me", sourceUrl: "https://lobehub.com/skills/lijiamou-skills-surprise-me", releaseDate: "2026-05-17", source: "third_party", sourceFeed: "lobehub.com/skills" },
-  { id: "tp-ai-pr-reviewer", name: "ai-pr-reviewer", category: "skill", domain: "Developer Tools", author: "mcpmarket", version: "1.1.0", description: "Automated AI code reviews integrated via GitHub CLI.", longDescription: "Multi-agent PR review: deploys five sub-agents (code quality, performance, test coverage, documentation, security) to analyze PRs simultaneously.", tags: ["PR", "AI agent", "review"], installs: 8_904, rating: 4.5, install: "npx -y mcpmarket skill add ai-pr-reviewer", docsUrl: "https://mcpmarket.com/tools/skills/ai-pr-reviewer", sourceUrl: "https://mcpmarket.com/tools/skills/ai-pr-reviewer", releaseDate: "2026-04-18", source: "third_party", sourceFeed: "openrouter.ai/apps" },
-  { id: "tp-github-pr-reviewer-5", name: "github-pr-reviewer-5", category: "skill", domain: "Developer Tools", author: "mcpmarket", version: "0.5.0", description: "Claude Code skill for GitHub PR code reviews.", longDescription: "Lightweight PR review skill — pulls diff via gh CLI, asks Claude for issues, posts inline comments. No extra dependencies.", tags: ["PR", "lightweight"], installs: 3_750, rating: 4.2, install: "npx -y mcpmarket skill add github-pr-reviewer-5", docsUrl: "https://mcpmarket.com/tools/skills/github-pr-reviewer-5", sourceUrl: "https://mcpmarket.com/tools/skills/github-pr-reviewer-5", releaseDate: "2026-03-29", source: "third_party", sourceFeed: "openrouter.ai/apps" },
-  { id: "tp-claude-skills-mp", name: "claude-skills-marketplace", category: "skill", domain: "Developer Tools", author: "mhattingpete", version: "0.9.0", description: "Curated bundle: git automation + testing + code review.", longDescription: "Engineering workflow bundle for Claude Code: git automation, test scaffolding, code review templates, and PR description generation.", tags: ["bundle", "engineering"], installs: 6_201, rating: 4.4, install: "git clone https://github.com/mhattingpete/claude-skills-marketplace", docsUrl: "https://github.com/mhattingpete/claude-skills-marketplace", sourceUrl: "https://github.com/mhattingpete/claude-skills-marketplace", githubRepoUrl: "https://github.com/mhattingpete/claude-skills-marketplace", releaseDate: "2026-04-04", source: "third_party", sourceFeed: "github.com/awesome-claude-skills" },
-  { id: "tp-hf-data-eda", name: "huggingface-data-eda", category: "skill", domain: "Data & Analytics", author: "community-skills", version: "0.5.0", description: "Quick EDA on any Hugging Face dataset.", longDescription: "Pulls a HF dataset, infers schema, produces summary stats, missing-value report, and visualizations in a single HTML report.", tags: ["EDA", "huggingface", "dataset"], installs: 2_188, rating: 4.1, install: "pip install hf-data-eda", docsUrl: "https://huggingface.co/datasets/community-skills/data-eda", sourceUrl: "https://huggingface.co/datasets/community-skills/data-eda", releaseDate: "2026-02-05", source: "third_party", sourceFeed: "huggingface.co/datasets/community-skills" },
-  { id: "tp-gitee-zh-prompts", name: "中文 prompt 工具箱", category: "skill", domain: "Productivity", author: "cherry-community", version: "0.4.0", description: "中文场景常用 prompt 模板集合（招聘/PR/会议纪要）。", longDescription: "面向中文办公场景的 prompt 模板：招聘 JD 撰写、PR 评审、会议纪要、邮件回复、技术方案模板。", tags: ["中文", "prompt", "办公"], installs: 4_310, rating: 4.3, install: "git clone https://gitee.com/cherry-community/skills-zh-prompts", docsUrl: "https://gitee.com/cherry-community/skills-zh-prompts", sourceUrl: "https://gitee.com/cherry-community/skills-zh-prompts", releaseDate: "2026-04-22", source: "third_party", sourceFeed: "gitee.com/cherry-community/skills" },
-  { id: "tp-gitee-base-helper", name: "飞书多维表格助手", category: "skill", domain: "Data & Analytics", author: "cherry-community", version: "0.6.0", description: "飞书 Base 字段设计 / 公式 / 跨表引用助手。", longDescription: "针对飞书 Base 的字段设计、公式表达、跨表查找引用、视图配置自动化的中文 skill。包含常见场景模板。", tags: ["飞书", "Base", "中文"], installs: 1_870, rating: 4.2, install: "git clone https://gitee.com/cherry-community/skills-lark-base", docsUrl: "https://gitee.com/cherry-community/skills-lark-base", sourceUrl: "https://gitee.com/cherry-community/skills-lark-base", releaseDate: "2026-03-19", source: "third_party", sourceFeed: "gitee.com/cherry-community/skills" },
-  { id: "tp-or-app-summarize", name: "openrouter-summarize", category: "skill", domain: "Productivity", author: "openrouter", version: "0.3.0", description: "Cross-model summarization with provider fallback.", longDescription: "Routes summarization across OpenRouter providers based on cost / quality / latency. Falls back automatically if a provider rate-limits.", tags: ["summarize", "openrouter"], installs: 9_550, rating: 4.3, install: "npx openrouter-skill install summarize", docsUrl: "https://openrouter.ai/apps/summarize", sourceUrl: "https://openrouter.ai/apps/summarize", releaseDate: "2026-04-09", source: "third_party", sourceFeed: "openrouter.ai/apps" },
-  { id: "tp-or-app-translate", name: "openrouter-translate", category: "skill", domain: "Productivity", author: "openrouter", version: "0.2.0", description: "Cross-model translation with terminology pinning.", longDescription: "Stable translation across providers with project-level glossary pinning and tone control (formal/casual/marketing).", tags: ["translate", "openrouter"], installs: 7_402, rating: 4.2, install: "npx openrouter-skill install translate", docsUrl: "https://openrouter.ai/apps/translate", sourceUrl: "https://openrouter.ai/apps/translate", releaseDate: "2026-03-22", source: "third_party", sourceFeed: "openrouter.ai/apps" },
-  { id: "tp-or-app-ocr", name: "openrouter-ocr", category: "skill", domain: "Data & Analytics", author: "openrouter", version: "0.1.0", description: "Multimodal OCR + structured extraction.", longDescription: "Sends images to a vision-capable provider, extracts structured fields (invoices, receipts, ID cards) into JSON schema.", tags: ["OCR", "vision", "extraction"], installs: 5_120, rating: 4.1, install: "npx openrouter-skill install ocr", docsUrl: "https://openrouter.ai/apps/ocr", sourceUrl: "https://openrouter.ai/apps/ocr", releaseDate: "2026-02-28", source: "third_party", sourceFeed: "openrouter.ai/apps" },
-  { id: "tp-hf-skill-eval", name: "skill-eval-harness", category: "skill", domain: "Developer Tools", author: "community-skills", version: "0.2.0", description: "Eval harness for any Claude skill: regression + scoring.", longDescription: "Define eval cases in YAML, run your skill across them, score outputs against a judge model. Catches regressions when refining prompts.", tags: ["eval", "regression", "judge"], installs: 1_408, rating: 4.0, install: "pip install skill-eval-harness", docsUrl: "https://huggingface.co/datasets/community-skills/skill-eval", sourceUrl: "https://huggingface.co/datasets/community-skills/skill-eval", releaseDate: "2026-02-12", source: "third_party", sourceFeed: "huggingface.co/datasets/community-skills" },
-  { id: "tp-lobehub-podcast", name: "podcast-script-writer", category: "skill", domain: "Productivity", author: "lobehub", version: "0.3.0", description: "Long-form podcast script generator with dialogue and beats.", longDescription: "Generates structured podcast scripts with host/guest dialogue, segment beats, cold opens, sponsor read placeholders, and outro CTAs.", tags: ["podcast", "writing"], installs: 2_330, rating: 4.2, install: "npx -y @lobehub/market-cli skills install lobehub-skills-podcast", docsUrl: "https://lobehub.com/skills/lobehub-skills-podcast", sourceUrl: "https://lobehub.com/skills/lobehub-skills-podcast", releaseDate: "2026-03-04", source: "third_party", sourceFeed: "lobehub.com/skills" },
-  { id: "tp-lobehub-rfc", name: "rfc-drafter", category: "skill", domain: "Documentation", author: "lobehub", version: "0.5.0", description: "Technical RFC drafting with reviewer-ready structure.", longDescription: "RFC scaffolds with motivation / context / proposed design / alternatives / risks / migration sections. Pulls inline diagrams from PlantUML.", tags: ["RFC", "spec", "design"], installs: 1_975, rating: 4.3, install: "npx -y @lobehub/market-cli skills install lobehub-skills-rfc", docsUrl: "https://lobehub.com/skills/lobehub-skills-rfc", sourceUrl: "https://lobehub.com/skills/lobehub-skills-rfc", releaseDate: "2026-04-01", source: "third_party", sourceFeed: "lobehub.com/skills" },
-  { id: "tp-claudemarket-canvas-skill", name: "canvas-skill", category: "skill", domain: "Design", author: "composiohq", version: "0.2.0", description: "Generate brand-cohesive canvas assets.", longDescription: "Canvas asset generator: social cards, banners, OG images, slide cover art with consistent visual identity.", tags: ["canvas", "brand"], installs: 1_810, rating: 4.1, install: "npx -y @lobehub/market-cli skills install composiohq-awesome-claude-skills-canvas-skill", docsUrl: "https://claudemarketplaces.com/skills/composiohq/awesome-claude-skills/canvas-skill", sourceUrl: "https://claudemarketplaces.com/skills/composiohq/awesome-claude-skills/canvas-skill", releaseDate: "2026-03-12", source: "third_party", sourceFeed: "claudemarketplaces.com/skills" },
-  { id: "tp-claudemarket-vibe-check", name: "vibe-check", category: "skill", domain: "Design", author: "composiohq", version: "0.1.0", description: "Score a design's aesthetic alignment with a target vibe.", longDescription: "Rubric-driven aesthetic scoring against a target reference. Outputs deltas (typography / spacing / color tension / hierarchy clarity).", tags: ["aesthetic", "scoring"], installs: 950, rating: 4.0, install: "npx -y @lobehub/market-cli skills install composiohq-awesome-claude-skills-vibe-check", docsUrl: "https://claudemarketplaces.com/skills/composiohq/awesome-claude-skills/vibe-check", sourceUrl: "https://claudemarketplaces.com/skills/composiohq/awesome-claude-skills/vibe-check", releaseDate: "2026-04-26", source: "third_party", sourceFeed: "claudemarketplaces.com/skills" },
-  { id: "tp-or-app-judge", name: "model-judge", category: "skill", domain: "AI & Agents", author: "openrouter", version: "0.1.0", description: "LLM-as-judge with calibration on golden answers.", longDescription: "Acts as a judge model with calibration set, computes inter-rater agreement against a held-out set, supports rubric-based or pairwise scoring.", tags: ["judge", "eval"], installs: 3_410, rating: 4.2, install: "npx openrouter-skill install judge", docsUrl: "https://openrouter.ai/apps/judge", sourceUrl: "https://openrouter.ai/apps/judge", releaseDate: "2026-03-26", source: "third_party", sourceFeed: "openrouter.ai/apps" },
-  { id: "tp-hf-rag-builder", name: "rag-builder", category: "skill", domain: "AI & Agents", author: "community-skills", version: "0.4.0", description: "End-to-end RAG pipeline from a folder of PDFs.", longDescription: "Drop a folder of PDFs, get a Chroma index, a chat endpoint, and a citation-tracking UI. Single command, sane defaults, replaceable parts.", tags: ["RAG", "PDF"], installs: 5_640, rating: 4.4, install: "pip install rag-builder", docsUrl: "https://huggingface.co/datasets/community-skills/rag-builder", sourceUrl: "https://huggingface.co/datasets/community-skills/rag-builder", releaseDate: "2026-04-21", source: "third_party", sourceFeed: "huggingface.co/datasets/community-skills" },
-  { id: "tp-claudeskills-meme", name: "meme-generator", category: "skill", domain: "Other", author: "anonymous", version: "0.1.0", description: "Topical, on-brand meme generator. NSFW filter optional.", longDescription: "Generates topical memes with brand-aware text overlay. Refuses to generate slurs / harassment imagery. Optional NSFW filter for SFW contexts.", tags: ["fun", "meme"], installs: 22_800, rating: 4.1, install: "npx claudeskills install meme-generator", docsUrl: "https://claudeskills.info/skills/meme-generator", sourceUrl: "https://claudeskills.info/skills/meme-generator", releaseDate: "2026-04-15", source: "third_party", sourceFeed: "claudeskills.info" },
-  { id: "tp-gitee-resume-zh", name: "中文简历生成器", category: "skill", domain: "Productivity", author: "cherry-community", version: "0.3.0", description: "面向国内招聘的中文简历生成 + 关键词优化。", longDescription: "针对国内招聘场景的中文简历模板：投递不同岗位时自动调整关键词、量化成就、压缩到 1-2 页。", tags: ["中文", "招聘", "简历"], installs: 6_840, rating: 4.4, install: "git clone https://gitee.com/cherry-community/skills-resume-zh", docsUrl: "https://gitee.com/cherry-community/skills-resume-zh", sourceUrl: "https://gitee.com/cherry-community/skills-resume-zh", releaseDate: "2026-05-02", source: "third_party", sourceFeed: "gitee.com/cherry-community/skills" },
+  { id: "tp-resume-builder", name: "tailored-resume-generator", domain: "Productivity", author: "composiohq", version: "1.0.2", description: "Analyze JDs and tailor a polished, ATS-friendly resume.", longDescription: "Extracts required skills, qualifications, and keywords from job descriptions; reprioritizes your experience and produces ATS-friendly, role-specific resumes.", tags: ["resume", "ATS", "career"], installs: 42_900, rating: 4.0, install: "npx -y @lobehub/market-cli skills install composiohq-awesome-claude-skills-tailored-resume-generator --agent claude-code", docsUrl: "https://lobehub.com/skills/composiohq-awesome-claude-skills-tailored-resume-generator", sourceUrl: "https://lobehub.com/skills/composiohq-awesome-claude-skills-tailored-resume-generator", releaseDate: "2026-03-11", source: "third_party", sourceFeed: "lobehub.com/skills" },
+  { id: "tp-canvas-design", name: "canvas-design", domain: "Design", author: "composiohq", version: "0.4.0", description: "Generate a design philosophy then a PDF/PNG expressing it.", longDescription: "Two-phase design generation: first defines an aesthetic direction (e.g. 'Brutalist Joy'), then produces production-ready PDFs or PNGs.", tags: ["design", "brand", "PDF"], installs: 18_300, rating: 4.2, install: "npx -y @lobehub/market-cli skills install composiohq-awesome-claude-skills-canvas-design", docsUrl: "https://lobehub.com/skills/composiohq-awesome-claude-skills-canvas-design", sourceUrl: "https://lobehub.com/skills/composiohq-awesome-claude-skills-canvas-design", releaseDate: "2026-04-02", source: "third_party", sourceFeed: "lobehub.com/skills" },
+  { id: "tp-landing-page-design", name: "landing-page-design", domain: "Design", author: "inferen-sh", version: "0.7.1", description: "Multi-library landing page generator with shadcn + Aceternity.", longDescription: "Composes landing pages from shadcn/ui, Aceternity UI, Magic UI, and 21st.dev components. Includes Next.js routing skeleton, i18n hooks, and responsive presets.", tags: ["landing", "shadcn", "marketing"], installs: 9_870, rating: 4.4, install: "npx -y @lobehub/market-cli skills install inferen-sh-skills-landing-page-design", docsUrl: "https://lobehub.com/skills/inferen-sh-skills-landing-page-design", sourceUrl: "https://lobehub.com/skills/inferen-sh-skills-landing-page-design", releaseDate: "2026-04-25", source: "third_party", sourceFeed: "lobehub.com/skills" },
+  { id: "tp-email-design", name: "email-design", domain: "Design", author: "inferen-sh", version: "0.3.0", description: "Designer-grade transactional and marketing email templates.", longDescription: "Generates MJML / HTML email templates with mobile-first design, dark-mode aware tokens, and bulletproof rendering checks across Outlook, Apple Mail, Gmail.", tags: ["email", "MJML", "marketing"], installs: 5_410, rating: 4.3, install: "npx -y @lobehub/market-cli skills install inferen-sh-skills-email-design", docsUrl: "https://lobehub.com/skills/inferen-sh-skills-email-design", sourceUrl: "https://lobehub.com/skills/inferen-sh-skills-email-design", releaseDate: "2026-03-17", source: "third_party", sourceFeed: "lobehub.com/skills" },
+  { id: "tp-impeccable-layout", name: "impeccable-layout", domain: "Design", author: "pbakaus", version: "0.2.0", description: "Diagnose and fix subtle spacing/hierarchy issues in UIs.", longDescription: "Runs the squint test, detects monotonous card grids and arbitrary spacing values, then applies consistent spacing systems and proper layout tools.", tags: ["UI", "spacing", "hierarchy"], installs: 3_220, rating: 4.5, install: "npx -y @lobehub/market-cli skills install pbakaus-impeccable-layout", docsUrl: "https://lobehub.com/skills/pbakaus-impeccable-layout", sourceUrl: "https://lobehub.com/skills/pbakaus-impeccable-layout", releaseDate: "2026-04-12", source: "third_party", sourceFeed: "lobehub.com/skills" },
+  { id: "tp-frontend-design-anthropic", name: "frontend-design (anthropic mirror)", domain: "Design", author: "anthropics", version: "1.6.0", description: "Anti-AI-slop frontend design guidance (community mirror).", longDescription: "Community mirror of Anthropic's frontend-design skill. Forces specific design direction with distinctive typography and contextual visual effects.", tags: ["frontend", "design system"], installs: 277_410, rating: 4.9, install: "claude skill install anthropics/frontend-design", docsUrl: "https://github.com/anthropics/skills/tree/main/frontend-design", sourceUrl: "https://github.com/anthropics/skills/tree/main/frontend-design", githubRepoUrl: "https://github.com/anthropics/skills", releaseDate: "2026-04-17", source: "third_party", sourceFeed: "github.com/awesome-claude-skills" },
+  { id: "tp-git-pr-skill", name: "claude-git-pr-skill", domain: "Developer Tools", author: "aidankinzett", version: "0.6.0", description: "Professional GitHub PR review with pending-review workflow.", longDescription: "Streamlines PR reviews via gh CLI: pending reviews, code suggestions, user approval workflow, inline comments, ticket tracking.", tags: ["PR", "GitHub", "code review"], installs: 12_640, rating: 4.6, install: "git clone https://github.com/aidankinzett/claude-git-pr-skill", docsUrl: "https://github.com/aidankinzett/claude-git-pr-skill", sourceUrl: "https://github.com/aidankinzett/claude-git-pr-skill", githubRepoUrl: "https://github.com/aidankinzett/claude-git-pr-skill", releaseDate: "2026-02-26", source: "third_party", sourceFeed: "github.com/awesome-claude-skills" },
+  { id: "tp-pr-reviewer-skill", name: "pr-reviewer-skill", domain: "Developer Tools", author: "SpillwaveSolutions", version: "0.4.0", description: "Multi-criteria PR reviewer (security/testing/maintainability).", longDescription: "Automates gh CLI data collection, analyzes against industry-standard criteria (security, testing, maintainability), generates structured review files, posts feedback with approval workflow.", tags: ["PR", "security", "review"], installs: 4_310, rating: 4.4, install: "git clone https://github.com/SpillwaveSolutions/pr-reviewer-skill", docsUrl: "https://github.com/SpillwaveSolutions/pr-reviewer-skill", sourceUrl: "https://github.com/SpillwaveSolutions/pr-reviewer-skill", githubRepoUrl: "https://github.com/SpillwaveSolutions/pr-reviewer-skill", releaseDate: "2026-03-08", source: "third_party", sourceFeed: "github.com/awesome-claude-skills" },
+  { id: "tp-caveman", name: "caveman", domain: "Other", author: "anonymous", version: "0.0.1", description: "Talk to Claude like a caveman. For fun.", longDescription: "Forces Claude to communicate exclusively in caveman-speak. Surprisingly popular for stress-testing prompt sensitivity.", tags: ["fun", "novelty"], installs: 145_600, rating: 4.7, install: "npx claudeskills install caveman", docsUrl: "https://claudeskills.info/skills/caveman", sourceUrl: "https://claudeskills.info/skills/caveman", releaseDate: "2026-01-30", source: "third_party", sourceFeed: "claudeskills.info" },
+  { id: "tp-ceo-advisor", name: "ceo-advisor", domain: "Productivity", author: "AlirezaRezvani", version: "0.3.0", description: "Executive leadership guidance for strategic decisions.", longDescription: "Strategic decision-making coach: organizational development, stakeholder management, capital allocation, hiring frameworks.", tags: ["leadership", "strategy"], installs: 2_180, rating: 4.1, install: "npx -y @lobehub/market-cli skills install alirezarezvani-claude-skills-ceo-advisor", docsUrl: "https://lobehub.com/skills/alirezarezvani-claude-skills-ceo-advisor", sourceUrl: "https://lobehub.com/skills/alirezarezvani-claude-skills-ceo-advisor", releaseDate: "2026-05-17", source: "third_party", sourceFeed: "lobehub.com/skills" },
+  { id: "tp-dev-growth", name: "developer-growth-advisor", domain: "Productivity", author: "AlirezaRezvani", version: "0.2.1", description: "Career growth coaching for software engineers.", longDescription: "Personalized career growth plans with skill-tree gaps, deliberate practice routines, and quarterly OKR drafts.", tags: ["career", "growth"], installs: 1_604, rating: 4.0, install: "npx -y @lobehub/market-cli skills install alirezarezvani-claude-skills-developer-growth-advisor", docsUrl: "https://lobehub.com/skills/alirezarezvani-claude-skills-developer-growth-advisor", sourceUrl: "https://lobehub.com/skills/alirezarezvani-claude-skills-developer-growth-advisor", releaseDate: "2026-05-16", source: "third_party", sourceFeed: "lobehub.com/skills" },
+  { id: "tp-surprise-me", name: "surprise-me", domain: "Other", author: "lijiamou", version: "0.1.0", description: "Random Claude chat history → unexpected 'wow' experience.", longDescription: "Reads a chat history, picks an unexpected angle, and produces a 'wow' moment by dynamically discovering creative connections.", tags: ["novelty", "creativity"], installs: 1_312, rating: 4.0, install: "npx -y @lobehub/market-cli skills install lijiamou-skills-surprise-me", docsUrl: "https://lobehub.com/skills/lijiamou-skills-surprise-me", sourceUrl: "https://lobehub.com/skills/lijiamou-skills-surprise-me", releaseDate: "2026-05-17", source: "third_party", sourceFeed: "lobehub.com/skills" },
+  { id: "tp-ai-pr-reviewer", name: "ai-pr-reviewer", domain: "Developer Tools", author: "mcpmarket", version: "1.1.0", description: "Automated AI code reviews integrated via GitHub CLI.", longDescription: "Multi-agent PR review: deploys five sub-agents (code quality, performance, test coverage, documentation, security) to analyze PRs simultaneously.", tags: ["PR", "AI agent", "review"], installs: 8_904, rating: 4.5, install: "npx -y mcpmarket skill add ai-pr-reviewer", docsUrl: "https://mcpmarket.com/tools/skills/ai-pr-reviewer", sourceUrl: "https://mcpmarket.com/tools/skills/ai-pr-reviewer", releaseDate: "2026-04-18", source: "third_party", sourceFeed: "openrouter.ai/apps" },
+  { id: "tp-github-pr-reviewer-5", name: "github-pr-reviewer-5", domain: "Developer Tools", author: "mcpmarket", version: "0.5.0", description: "Claude Code skill for GitHub PR code reviews.", longDescription: "Lightweight PR review skill — pulls diff via gh CLI, asks Claude for issues, posts inline comments. No extra dependencies.", tags: ["PR", "lightweight"], installs: 3_750, rating: 4.2, install: "npx -y mcpmarket skill add github-pr-reviewer-5", docsUrl: "https://mcpmarket.com/tools/skills/github-pr-reviewer-5", sourceUrl: "https://mcpmarket.com/tools/skills/github-pr-reviewer-5", releaseDate: "2026-03-29", source: "third_party", sourceFeed: "openrouter.ai/apps" },
+  { id: "tp-claude-skills-mp", name: "claude-skills-marketplace", domain: "Developer Tools", author: "mhattingpete", version: "0.9.0", description: "Curated bundle: git automation + testing + code review.", longDescription: "Engineering workflow bundle for Claude Code: git automation, test scaffolding, code review templates, and PR description generation.", tags: ["bundle", "engineering"], installs: 6_201, rating: 4.4, install: "git clone https://github.com/mhattingpete/claude-skills-marketplace", docsUrl: "https://github.com/mhattingpete/claude-skills-marketplace", sourceUrl: "https://github.com/mhattingpete/claude-skills-marketplace", githubRepoUrl: "https://github.com/mhattingpete/claude-skills-marketplace", releaseDate: "2026-04-04", source: "third_party", sourceFeed: "github.com/awesome-claude-skills" },
+  { id: "tp-hf-data-eda", name: "huggingface-data-eda", domain: "Data & Analytics", author: "community-skills", version: "0.5.0", description: "Quick EDA on any Hugging Face dataset.", longDescription: "Pulls a HF dataset, infers schema, produces summary stats, missing-value report, and visualizations in a single HTML report.", tags: ["EDA", "huggingface", "dataset"], installs: 2_188, rating: 4.1, install: "pip install hf-data-eda", docsUrl: "https://huggingface.co/datasets/community-skills/data-eda", sourceUrl: "https://huggingface.co/datasets/community-skills/data-eda", releaseDate: "2026-02-05", source: "third_party", sourceFeed: "huggingface.co/datasets/community-skills" },
+  { id: "tp-gitee-zh-prompts", name: "中文 prompt 工具箱", domain: "Productivity", author: "cherry-community", version: "0.4.0", description: "中文场景常用 prompt 模板集合（招聘/PR/会议纪要）。", longDescription: "面向中文办公场景的 prompt 模板：招聘 JD 撰写、PR 评审、会议纪要、邮件回复、技术方案模板。", tags: ["中文", "prompt", "办公"], installs: 4_310, rating: 4.3, install: "git clone https://gitee.com/cherry-community/skills-zh-prompts", docsUrl: "https://gitee.com/cherry-community/skills-zh-prompts", sourceUrl: "https://gitee.com/cherry-community/skills-zh-prompts", releaseDate: "2026-04-22", source: "third_party", sourceFeed: "gitee.com/cherry-community/skills" },
+  { id: "tp-gitee-base-helper", name: "飞书多维表格助手", domain: "Data & Analytics", author: "cherry-community", version: "0.6.0", description: "飞书 Base 字段设计 / 公式 / 跨表引用助手。", longDescription: "针对飞书 Base 的字段设计、公式表达、跨表查找引用、视图配置自动化的中文 skill。包含常见场景模板。", tags: ["飞书", "Base", "中文"], installs: 1_870, rating: 4.2, install: "git clone https://gitee.com/cherry-community/skills-lark-base", docsUrl: "https://gitee.com/cherry-community/skills-lark-base", sourceUrl: "https://gitee.com/cherry-community/skills-lark-base", releaseDate: "2026-03-19", source: "third_party", sourceFeed: "gitee.com/cherry-community/skills" },
+  { id: "tp-or-app-summarize", name: "openrouter-summarize", domain: "Productivity", author: "openrouter", version: "0.3.0", description: "Cross-model summarization with provider fallback.", longDescription: "Routes summarization across OpenRouter providers based on cost / quality / latency. Falls back automatically if a provider rate-limits.", tags: ["summarize", "openrouter"], installs: 9_550, rating: 4.3, install: "npx openrouter-skill install summarize", docsUrl: "https://openrouter.ai/apps/summarize", sourceUrl: "https://openrouter.ai/apps/summarize", releaseDate: "2026-04-09", source: "third_party", sourceFeed: "openrouter.ai/apps" },
+  { id: "tp-or-app-translate", name: "openrouter-translate", domain: "Productivity", author: "openrouter", version: "0.2.0", description: "Cross-model translation with terminology pinning.", longDescription: "Stable translation across providers with project-level glossary pinning and tone control (formal/casual/marketing).", tags: ["translate", "openrouter"], installs: 7_402, rating: 4.2, install: "npx openrouter-skill install translate", docsUrl: "https://openrouter.ai/apps/translate", sourceUrl: "https://openrouter.ai/apps/translate", releaseDate: "2026-03-22", source: "third_party", sourceFeed: "openrouter.ai/apps" },
+  { id: "tp-or-app-ocr", name: "openrouter-ocr", domain: "Data & Analytics", author: "openrouter", version: "0.1.0", description: "Multimodal OCR + structured extraction.", longDescription: "Sends images to a vision-capable provider, extracts structured fields (invoices, receipts, ID cards) into JSON schema.", tags: ["OCR", "vision", "extraction"], installs: 5_120, rating: 4.1, install: "npx openrouter-skill install ocr", docsUrl: "https://openrouter.ai/apps/ocr", sourceUrl: "https://openrouter.ai/apps/ocr", releaseDate: "2026-02-28", source: "third_party", sourceFeed: "openrouter.ai/apps" },
+  { id: "tp-hf-skill-eval", name: "skill-eval-harness", domain: "Developer Tools", author: "community-skills", version: "0.2.0", description: "Eval harness for any Claude skill: regression + scoring.", longDescription: "Define eval cases in YAML, run your skill across them, score outputs against a judge model. Catches regressions when refining prompts.", tags: ["eval", "regression", "judge"], installs: 1_408, rating: 4.0, install: "pip install skill-eval-harness", docsUrl: "https://huggingface.co/datasets/community-skills/skill-eval", sourceUrl: "https://huggingface.co/datasets/community-skills/skill-eval", releaseDate: "2026-02-12", source: "third_party", sourceFeed: "huggingface.co/datasets/community-skills" },
+  { id: "tp-lobehub-podcast", name: "podcast-script-writer", domain: "Productivity", author: "lobehub", version: "0.3.0", description: "Long-form podcast script generator with dialogue and beats.", longDescription: "Generates structured podcast scripts with host/guest dialogue, segment beats, cold opens, sponsor read placeholders, and outro CTAs.", tags: ["podcast", "writing"], installs: 2_330, rating: 4.2, install: "npx -y @lobehub/market-cli skills install lobehub-skills-podcast", docsUrl: "https://lobehub.com/skills/lobehub-skills-podcast", sourceUrl: "https://lobehub.com/skills/lobehub-skills-podcast", releaseDate: "2026-03-04", source: "third_party", sourceFeed: "lobehub.com/skills" },
+  { id: "tp-lobehub-rfc", name: "rfc-drafter", domain: "Documentation", author: "lobehub", version: "0.5.0", description: "Technical RFC drafting with reviewer-ready structure.", longDescription: "RFC scaffolds with motivation / context / proposed design / alternatives / risks / migration sections. Pulls inline diagrams from PlantUML.", tags: ["RFC", "spec", "design"], installs: 1_975, rating: 4.3, install: "npx -y @lobehub/market-cli skills install lobehub-skills-rfc", docsUrl: "https://lobehub.com/skills/lobehub-skills-rfc", sourceUrl: "https://lobehub.com/skills/lobehub-skills-rfc", releaseDate: "2026-04-01", source: "third_party", sourceFeed: "lobehub.com/skills" },
+  { id: "tp-claudemarket-canvas-skill", name: "canvas-skill", domain: "Design", author: "composiohq", version: "0.2.0", description: "Generate brand-cohesive canvas assets.", longDescription: "Canvas asset generator: social cards, banners, OG images, slide cover art with consistent visual identity.", tags: ["canvas", "brand"], installs: 1_810, rating: 4.1, install: "npx -y @lobehub/market-cli skills install composiohq-awesome-claude-skills-canvas-skill", docsUrl: "https://claudemarketplaces.com/skills/composiohq/awesome-claude-skills/canvas-skill", sourceUrl: "https://claudemarketplaces.com/skills/composiohq/awesome-claude-skills/canvas-skill", releaseDate: "2026-03-12", source: "third_party", sourceFeed: "claudemarketplaces.com/skills" },
+  { id: "tp-claudemarket-vibe-check", name: "vibe-check", domain: "Design", author: "composiohq", version: "0.1.0", description: "Score a design's aesthetic alignment with a target vibe.", longDescription: "Rubric-driven aesthetic scoring against a target reference. Outputs deltas (typography / spacing / color tension / hierarchy clarity).", tags: ["aesthetic", "scoring"], installs: 950, rating: 4.0, install: "npx -y @lobehub/market-cli skills install composiohq-awesome-claude-skills-vibe-check", docsUrl: "https://claudemarketplaces.com/skills/composiohq/awesome-claude-skills/vibe-check", sourceUrl: "https://claudemarketplaces.com/skills/composiohq/awesome-claude-skills/vibe-check", releaseDate: "2026-04-26", source: "third_party", sourceFeed: "claudemarketplaces.com/skills" },
+  { id: "tp-or-app-judge", name: "model-judge", domain: "AI & Agents", author: "openrouter", version: "0.1.0", description: "LLM-as-judge with calibration on golden answers.", longDescription: "Acts as a judge model with calibration set, computes inter-rater agreement against a held-out set, supports rubric-based or pairwise scoring.", tags: ["judge", "eval"], installs: 3_410, rating: 4.2, install: "npx openrouter-skill install judge", docsUrl: "https://openrouter.ai/apps/judge", sourceUrl: "https://openrouter.ai/apps/judge", releaseDate: "2026-03-26", source: "third_party", sourceFeed: "openrouter.ai/apps" },
+  { id: "tp-hf-rag-builder", name: "rag-builder", domain: "AI & Agents", author: "community-skills", version: "0.4.0", description: "End-to-end RAG pipeline from a folder of PDFs.", longDescription: "Drop a folder of PDFs, get a Chroma index, a chat endpoint, and a citation-tracking UI. Single command, sane defaults, replaceable parts.", tags: ["RAG", "PDF"], installs: 5_640, rating: 4.4, install: "pip install rag-builder", docsUrl: "https://huggingface.co/datasets/community-skills/rag-builder", sourceUrl: "https://huggingface.co/datasets/community-skills/rag-builder", releaseDate: "2026-04-21", source: "third_party", sourceFeed: "huggingface.co/datasets/community-skills" },
+  { id: "tp-claudeskills-meme", name: "meme-generator", domain: "Other", author: "anonymous", version: "0.1.0", description: "Topical, on-brand meme generator. NSFW filter optional.", longDescription: "Generates topical memes with brand-aware text overlay. Refuses to generate slurs / harassment imagery. Optional NSFW filter for SFW contexts.", tags: ["fun", "meme"], installs: 22_800, rating: 4.1, install: "npx claudeskills install meme-generator", docsUrl: "https://claudeskills.info/skills/meme-generator", sourceUrl: "https://claudeskills.info/skills/meme-generator", releaseDate: "2026-04-15", source: "third_party", sourceFeed: "claudeskills.info" },
+  { id: "tp-gitee-resume-zh", name: "中文简历生成器", domain: "Productivity", author: "cherry-community", version: "0.3.0", description: "面向国内招聘的中文简历生成 + 关键词优化。", longDescription: "针对国内招聘场景的中文简历模板：投递不同岗位时自动调整关键词、量化成就、压缩到 1-2 页。", tags: ["中文", "招聘", "简历"], installs: 6_840, rating: 4.4, install: "git clone https://gitee.com/cherry-community/skills-resume-zh", docsUrl: "https://gitee.com/cherry-community/skills-resume-zh", sourceUrl: "https://gitee.com/cherry-community/skills-resume-zh", releaseDate: "2026-05-02", source: "third_party", sourceFeed: "gitee.com/cherry-community/skills" },
 ];
 
 export const THIRD_PARTY_FEED_NAMES = THIRD_PARTY_FEEDS;
@@ -1229,7 +1172,6 @@ function genThirdPartySkills(count: number, seed: number): Skill[] {
     used.add(id);
 
     const name = `${prefix}-${noun}`;
-    const category: SkillCategory = rng() < 0.18 ? "cli" : "skill";
     const installs = Math.floor(rng() * 50_000) + 50;
     const rating = Math.round((3.5 + rng() * 1.5) * 10) / 10;
     const ageDays = Math.floor(rng() * 540);
@@ -1249,12 +1191,11 @@ function genThirdPartySkills(count: number, seed: number): Skill[] {
 
     const sourceUrl = `https://${feed.replace(/\/$/, "")}/${id}`;
     const description = `A ${domain.toLowerCase()} skill that helps with ${noun}-style tasks.`;
-    const longDescription = `${name} is a ${category === "cli" ? "command-line tool" : "Claude skill"} contributed by ${author} via ${feed}. It targets ${domain.toLowerCase()} workflows and pairs well with other ${prefix}-* community skills.`;
+    const longDescription = `${name} is a Claude skill contributed by ${author} via ${feed}. It targets ${domain.toLowerCase()} workflows and pairs well with other ${prefix}-* community skills.`;
 
     out.push({
       id,
       name,
-      category,
       domain,
       author,
       version,

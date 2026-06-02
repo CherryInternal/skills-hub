@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Sparkles,
-  Terminal,
   Star,
   Download,
   Check,
@@ -41,7 +40,6 @@ import {
   SKILLS,
   pickLocale,
   type Skill,
-  type SkillCategory,
 } from "./skills-data";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -50,11 +48,6 @@ interface SkillDetailSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-const CATEGORY_ICONS: Record<SkillCategory, typeof Sparkles> = {
-  skill: Sparkles,
-  cli: Terminal,
-};
 
 type Platform = "claude-code" | "codex" | "cursor" | "vscode" | "cline";
 const PLATFORMS: Array<{ key: Platform; label: string }> = [
@@ -148,9 +141,7 @@ function deriveCapabilities(skill: Skill) {
       key: "offline",
       label: "Works offline",
       Icon: WifiOff,
-      on:
-        skill.category === "cli" ||
-        /offline|local|no.?network/.test(text),
+      on: /offline|local|no.?network/.test(text),
     },
     {
       key: "open-source",
@@ -168,12 +159,12 @@ function deriveCapabilities(skill: Skill) {
 }
 
 function deriveCompatibility(skill: Skill) {
-  // Mock per-platform compatibility based on category
+  // Mock per-platform compatibility based on domain/tags
   const baseSupport: Record<Platform, boolean> = {
     "claude-code": true,
-    codex: skill.category === "cli" || /agent|prompt|skill/.test(skill.tags.join(" ").toLowerCase()),
-    cursor: skill.category === "cli" || skill.domain === "Developer Tools" || skill.domain === "Design",
-    vscode: skill.category === "cli" || skill.domain === "Developer Tools",
+    codex: /agent|prompt|skill/.test(skill.tags.join(" ").toLowerCase()),
+    cursor: skill.domain === "Developer Tools" || skill.domain === "Design",
+    vscode: skill.domain === "Developer Tools",
     cline: skill.domain === "AI & Agents" || skill.domain === "Automation",
   };
   return PLATFORMS.map((p) => ({ ...p, supported: baseSupport[p.key] }));
@@ -182,13 +173,6 @@ function deriveCompatibility(skill: Skill) {
 function buildExamplePrompts(skill: Skill): string[] {
   const name = pickLocale(skill.name, "en");
   const desc = pickLocale(skill.description, "en");
-  const base = name.toLowerCase();
-  if (skill.category === "cli") {
-    return [
-      `Use ${base} to ${desc.toLowerCase().replace(/\.$/, "")}.`,
-      `Run ${base} for the project in ./packages/web and summarize what it found.`,
-    ];
-  }
   return [
     `Use the ${name} skill on the current repo.`,
     `Apply ${name} to my latest PR and explain what changed.`,
@@ -251,7 +235,6 @@ Read: ${skill.docsUrl}
 Then follow the SKILL.md instructions in the installed directory.`;
 
   const platformCommand = (() => {
-    if (skill.category === "cli") return skill.install;
     switch (platform) {
       case "claude-code":
         return skill.install;
@@ -344,7 +327,7 @@ export function SkillDetailSheet({
   const current = activeSkill ?? skill;
   if (!current) return null;
 
-  const Icon = CATEGORY_ICONS[current.category];
+  const Icon = Sparkles;
   const isTrusted = TRUSTED_AUTHORS.has(current.author);
   const caps = deriveCapabilities(current);
   const compatibility = deriveCompatibility(current);
