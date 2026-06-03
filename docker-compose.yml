@@ -16,5 +16,19 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: skills-hub-rustfs
+    environment:
+      RUSTFS_ACCESS_KEY: skillshub
+      RUSTFS_SECRET_KEY: skillshub_dev
+      RUSTFS_CONSOLE_ENABLE: "true"
+    command: ["--address", ":9000", "--console-enable", "--access-key", "skillshub", "--secret-key", "skillshub_dev", "/data"]
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - rustfs_data:/data
 volumes:
   skillshub_pgdata:
+  rustfs_data:
