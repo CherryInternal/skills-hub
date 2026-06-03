@@ -27,7 +27,7 @@ import { SkillDetailSheet } from "./skill-detail-sheet";
 
 type SortOption = "popular" | "newest" | "rating" | "name_asc";
 
-function formatInstalls(n: number): string {
+function formatDownloads(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return String(n);
@@ -113,7 +113,7 @@ function SkillCard({
       <div className="border-border/60 text-muted-foreground flex items-center justify-between border-t px-5 py-2.5 text-xs dark:border-white/[0.08]">
         <span className="flex items-center gap-1">
           <Download className="size-3" />
-          {formatInstalls(skill.installs)}
+          {formatDownloads(skill.downloads)}
         </span>
         <button
           type="button"
@@ -169,7 +169,7 @@ export function SkillsMarketplace() {
     }
     switch (sort) {
       case "popular":
-        list.sort((a, b) => b.installs - a.installs);
+        list.sort((a, b) => b.downloads - a.downloads);
         break;
       case "newest":
         list.sort(
