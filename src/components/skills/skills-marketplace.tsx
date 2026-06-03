@@ -1,18 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import {
-  Search,
-  Sparkles,
-  Bookmark,
-  Download,
-  Plus,
-  Layers,
-  Inbox,
-} from "lucide-react";
+import { Search, Sparkles, Bookmark, Download, Layers } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,9 +23,7 @@ import {
   type Skill,
   type SkillDomain,
 } from "./skills-data";
-import { SkillSubmitDialog } from "./skill-submit-dialog";
 import { SkillDetailSheet } from "./skill-detail-sheet";
-import { appendSubmission } from "./skills-storage";
 
 type SortOption = "popular" | "newest" | "rating" | "name_asc";
 
@@ -159,7 +148,6 @@ export function SkillsMarketplace() {
   const [sort, setSort] = useState<SortOption>("popular");
   const [selected, setSelected] = useState<Skill | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [submitOpen, setSubmitOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(60);
 
   useEffect(() => {
@@ -245,20 +233,6 @@ export function SkillsMarketplace() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detailParam, allSkills]);
 
-  const handleSubmit = (
-    skill: Skill,
-    options?: {
-      githubPrUrl?: string;
-      submissionType?: "self" | "subscription" | "upload";
-    },
-  ) => {
-    appendSubmission(skill, {
-      githubPrUrl: options?.githubPrUrl,
-      submissionType: options?.submissionType,
-    });
-    router.push("/submissions");
-  };
-
   return (
     <>
       <Section className="px-6 !py-16 sm:px-8">
@@ -271,22 +245,6 @@ export function SkillsMarketplace() {
               <p className="animate-appear text-muted-foreground text-sm font-normal opacity-0 delay-100">
                 {t("subtitle")}
               </p>
-            </div>
-            <div className="animate-appear flex items-center gap-2 opacity-0 delay-100">
-              <Link
-                href="/submissions"
-                className="text-muted-foreground hover:text-foreground inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm"
-              >
-                <Inbox className="size-4" />
-                {t("mySubmissionsLink")}
-              </Link>
-              <Button
-                onClick={() => setSubmitOpen(true)}
-                className="bg-foreground text-background hover:bg-foreground/90 h-9 gap-1.5"
-              >
-                <Plus className="size-4" />
-                {t("submitButton")}
-              </Button>
             </div>
           </div>
 
@@ -429,11 +387,6 @@ export function SkillsMarketplace() {
         skill={selected}
         open={sheetOpen}
         onOpenChange={closeDetail}
-      />
-      <SkillSubmitDialog
-        open={submitOpen}
-        onOpenChange={setSubmitOpen}
-        onSubmit={handleSubmit}
       />
     </>
   );
