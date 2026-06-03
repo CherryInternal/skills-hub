@@ -1,7 +1,11 @@
 import { z } from "zod";
 
 import type { Prisma, Skill as SkillRow } from "../../../../generated/prisma";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "~/server/api/trpc";
 
 // DB row → frontend Skill shape (LocalizedString {en, zh?}), so existing
 // components keep using pickLocale() unchanged.
@@ -114,13 +118,13 @@ export const skillRouter = createTRPCRouter({
     return out;
   }),
 
-  // ── admin (TODO: protect once auth lands) ───────────────
-  adminList: publicProcedure.query(async ({ ctx }) => {
+  // ── admin (protected: requires admin session) ──────────
+  adminList: protectedProcedure.query(async ({ ctx }) => {
     const rows = await ctx.db.skill.findMany({ orderBy: { updatedAt: "desc" } });
     return rows.map(toSkill);
   }),
 
-  setPublished: publicProcedure
+  setPublished: protectedProcedure
     .input(z.object({ id: z.string(), published: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.skill.update({
@@ -130,7 +134,7 @@ export const skillRouter = createTRPCRouter({
       return { ok: true };
     }),
 
-  create: publicProcedure.input(skillInput).mutation(async ({ ctx, input }) => {
+  create: protectedProcedure.input(skillInput).mutation(async ({ ctx, input }) => {
     const { releaseDate, ...rest } = input;
     const row = await ctx.db.skill.create({
       data: { ...rest, releaseDate: new Date(releaseDate) },
@@ -138,7 +142,7 @@ export const skillRouter = createTRPCRouter({
     return toSkill(row);
   }),
 
-  update: publicProcedure
+  update: protectedProcedure
     .input(skillInput.partial().extend({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { id, releaseDate, ...rest } = input;
@@ -152,7 +156,7 @@ export const skillRouter = createTRPCRouter({
       return toSkill(row);
     }),
 
-  delete: publicProcedure
+  delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.skill.delete({ where: { id: input.id } });

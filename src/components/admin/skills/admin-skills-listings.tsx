@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Search, Store, Pencil, Trash2 } from "lucide-react";
+import { LogOut, Pencil, Search, Store, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,25 +22,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { pickLocale } from "@/components/skills/skills-data";
+import { api } from "~/trpc/react";
+import { logout } from "~/app/admin/actions";
 import {
-  deleteListing,
-  loadListings,
-  setListingPublished,
-  type ListingItem,
-  type ListingSource,
-} from "@/components/skills/skills-storage";
-import { pickLocale, SKILL_DOMAINS, type SkillDomain } from "@/components/skills/skills-data";
-import { AdminSkillEditSheet } from "./admin-skill-edit-sheet";
+  AdminSkillEditSheet,
+  type AdminSkill,
+} from "./admin-skill-edit-sheet";
 
-type SourceFilter = "all" | ListingSource;
 type StatusFilter = "all" | "published" | "unpublished";
-type DomainFilter = "all" | SkillDomain;
-
-const SOURCE_TABS: Array<{ key: SourceFilter; labelKey: string }> = [
-  { key: "all", labelKey: "sourceAll" },
-  { key: "catalog", labelKey: "sourceCatalog" },
-  { key: "submission", labelKey: "sourceSubmission" },
-];
 
 const STATUS_TABS: Array<{ key: StatusFilter; labelKey: string }> = [
   { key: "all", labelKey: "statusAll" },
@@ -57,30 +47,26 @@ function formatInstalls(n: number): string {
 export function AdminSkillsListings() {
   const locale = useLocale();
   const t = useTranslations("admin.listings");
-  const [items, setItems] = useState<ListingItem[]>([]);
-  const [source, setSource] = useState<SourceFilter>("all");
+  const utils = api.useUtils();
+  const listQuery = api.skill.adminList.useQuery();
+  const items = useMemo(() => listQuery.data ?? [], [listQuery.data]);
+
+  const setPublished = api.skill.setPublished.useMutation({
+    onSuccess: () => utils.skill.adminList.invalidate(),
+  });
+  const deleteSkill = api.skill.delete.useMutation({
+    onSuccess: () => utils.skill.adminList.invalidate(),
+  });
+
   const [status, setStatus] = useState<StatusFilter>("all");
-  const [domain, setDomain] = useState<DomainFilter>("all");
+  const [domain, setDomain] = useState<string>("all");
   const [search, setSearch] = useState("");
-  const [editing, setEditing] = useState<ListingItem | null>(null);
+  const [editing, setEditing] = useState<AdminSkill | null>(null);
   const [editOpen, setEditOpen] = useState(false);
 
-  const refresh = () => setItems(loadListings());
-
-  useEffect(() => {
-    refresh();
-  }, []);
-
   const counts = useMemo(() => {
-    const c = {
-      all: items.length,
-      catalog: 0,
-      submission: 0,
-      published: 0,
-      unpublished: 0,
-    };
+    const c = { all: items.length, published: 0, unpublished: 0 };
     for (const it of items) {
-      c[it.source] += 1;
       if (it.published) c.published += 1;
       else c.unpublished += 1;
     }
@@ -88,44 +74,44 @@ export function AdminSkillsListings() {
   }, [items]);
 
   const domainCounts = useMemo(() => {
-    const map = new Map<SkillDomain, number>();
-    for (const d of SKILL_DOMAINS) map.set(d, 0);
-    for (const i of items) {
-      map.set(i.skill.domain, (map.get(i.skill.domain) ?? 0) + 1);
-    }
+    const map = new Map<string, number>();
+    for (const i of items) map.set(i.domain, (map.get(i.domain) ?? 0) + 1);
     return map;
   }, [items]);
 
+  const domains = useMemo(
+    () => [...domainCounts.keys()].sort((a, b) => a.localeCompare(b)),
+    [domainCounts],
+  );
+
   const filtered = useMemo(() => {
     let list = items.slice();
-    if (source !== "all") list = list.filter((i) => i.source === source);
     if (status === "published") list = list.filter((i) => i.published);
     else if (status === "unpublished") list = list.filter((i) => !i.published);
-    if (domain !== "all") list = list.filter((i) => i.skill.domain === domain);
+    if (domain !== "all") list = list.filter((i) => i.domain === domain);
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       list = list.filter(
         (i) =>
-          pickLocale(i.skill.name, "en").toLowerCase().includes(q) ||
-          pickLocale(i.skill.name, "zh").toLowerCase().includes(q) ||
-          i.skill.author.toLowerCase().includes(q) ||
-          i.skill.domain.toLowerCase().includes(q) ||
-          i.skill.tags.some((t) => t.toLowerCase().includes(q)),
+          pickLocale(i.name, "en").toLowerCase().includes(q) ||
+          pickLocale(i.name, "zh").toLowerCase().includes(q) ||
+          i.author.toLowerCase().includes(q) ||
+          i.domain.toLowerCase().includes(q) ||
+          i.tags.some((tg) => tg.toLowerCase().includes(q)),
       );
     }
     return list.sort((a, b) => {
       if (a.published !== b.published) return a.published ? -1 : 1;
-      return b.skill.installs - a.skill.installs;
+      return b.installs - a.installs;
     });
-  }, [items, source, status, domain, search]);
+  }, [items, status, domain, search]);
 
-  const handleToggle = (item: ListingItem, next: boolean) => {
-    setListingPublished(item, next, "admin");
-    refresh();
+  const handleToggle = (item: AdminSkill, next: boolean) => {
+    setPublished.mutate({ id: item.id, published: next });
   };
 
-  const handleDelete = (item: ListingItem) => {
-    const name = pickLocale(item.skill.name, locale);
+  const handleDelete = (item: AdminSkill) => {
+    const name = pickLocale(item.name, locale);
     if (
       !window.confirm(
         `${t("deleteConfirmPrefix")}「${name}」${t("deleteConfirmSuffix")}`,
@@ -133,49 +119,30 @@ export function AdminSkillsListings() {
     ) {
       return;
     }
-    deleteListing(item, "admin");
-    refresh();
+    deleteSkill.mutate({ id: item.id });
   };
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-center gap-2">
-          <Store className="text-foreground size-5" strokeWidth={2} />
-          <h1 className="text-foreground text-xl font-semibold tracking-tight">
-            {t("title")}
-          </h1>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-2">
+            <Store className="text-foreground size-5" strokeWidth={2} />
+            <h1 className="text-foreground text-xl font-semibold tracking-tight">
+              {t("title")}
+            </h1>
+          </div>
+          <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
         </div>
-        <p className="text-muted-foreground text-sm">
-          {t("subtitle")}
-        </p>
+        <form action={logout}>
+          <Button type="submit" variant="outline" size="sm" className="h-9 gap-1.5">
+            <LogOut className="size-3.5" />
+            {t("logout")}
+          </Button>
+        </form>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground text-xs">{t("sourceLabel")}</span>
-          <Select
-            value={source}
-            onValueChange={(v) => setSource(v as SourceFilter)}
-          >
-            <SelectTrigger className="h-9 w-44 shadow-none">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {SOURCE_TABS.map(({ key, labelKey }) => (
-                <SelectItem key={key} value={key}>
-                  {t(labelKey)} (
-                  {key === "all"
-                    ? counts.all
-                    : key === "catalog"
-                      ? counts.catalog
-                      : counts.submission}
-                  )
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
         <div className="flex items-center gap-2">
           <span className="text-muted-foreground text-xs">{t("statusLabel")}</span>
           <Select
@@ -202,16 +169,15 @@ export function AdminSkillsListings() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-muted-foreground text-xs">{t("domainLabel")}</span>
-          <Select
-            value={domain}
-            onValueChange={(v) => setDomain(v as DomainFilter)}
-          >
+          <Select value={domain} onValueChange={(v) => setDomain(v)}>
             <SelectTrigger className="h-9 w-48 shadow-none">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("domainAll")} ({counts.all})</SelectItem>
-              {SKILL_DOMAINS.map((d) => (
+              <SelectItem value="all">
+                {t("domainAll")} ({counts.all})
+              </SelectItem>
+              {domains.map((d) => (
                 <SelectItem key={d} value={d}>
                   {d} ({domainCounts.get(d) ?? 0})
                 </SelectItem>
@@ -238,11 +204,11 @@ export function AdminSkillsListings() {
           <div className="flex flex-col items-center gap-2 py-16 text-center">
             <Store className="text-muted-foreground/50 size-8" />
             <p className="text-foreground text-sm font-medium">
-              {t("emptyTitle")}
+              {listQuery.isLoading ? t("loading") : t("emptyTitle")}
             </p>
-            <p className="text-muted-foreground text-xs">
-              {t("emptyHint")}
-            </p>
+            {!listQuery.isLoading && (
+              <p className="text-muted-foreground text-xs">{t("emptyHint")}</p>
+            )}
           </div>
         ) : (
           <Table>
@@ -250,7 +216,6 @@ export function AdminSkillsListings() {
               <TableRow>
                 <TableHead>{t("colName")}</TableHead>
                 <TableHead>{t("colAuthor")}</TableHead>
-                <TableHead>{t("colSource")}</TableHead>
                 <TableHead className="text-right">{t("colInstalls")}</TableHead>
                 <TableHead className="text-center">{t("colStatus")}</TableHead>
                 <TableHead className="text-center">{t("colPublish")}</TableHead>
@@ -258,111 +223,96 @@ export function AdminSkillsListings() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((item) => {
-                return (
-                  <TableRow key={`${item.source}-${item.skill.id}`}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="bg-muted text-foreground flex size-8 shrink-0 items-center justify-center rounded-md">
-                          <Store className="size-4" strokeWidth={2} />
+              {filtered.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div className="bg-muted text-foreground flex size-8 shrink-0 items-center justify-center rounded-md">
+                        <Store className="size-4" strokeWidth={2} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-foreground truncate text-sm font-semibold tracking-tight">
+                          {pickLocale(item.name, locale)}
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-foreground truncate text-sm font-semibold tracking-tight">
-                            {pickLocale(item.skill.name, locale)}
-                          </div>
-                          <div className="text-muted-foreground truncate text-xs">
-                            {item.skill.domain} ·{" "}
-                            <span className="font-[Menlo,monospace]">
-                              v{item.skill.version}
-                            </span>
-                          </div>
+                        <div className="text-muted-foreground truncate text-xs">
+                          {item.domain} ·{" "}
+                          <span className="font-[Menlo,monospace]">
+                            v{item.version}
+                          </span>
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
-                      {item.skill.author}
-                    </TableCell>
-                    <TableCell>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-xs">
+                    {item.author}
+                  </TableCell>
+                  <TableCell className="text-right text-xs tabular-nums">
+                    {formatInstalls(item.installs)}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {item.published ? (
                       <Badge
                         variant="outline"
-                        className="rounded-md text-[11px] font-medium"
+                        className="rounded-full border-emerald-500/40 bg-emerald-500/10 text-[11px] text-emerald-700 dark:text-emerald-300"
                       >
-                        {item.source === "catalog"
-                          ? t("badgeCatalog")
-                          : t("badgeSubmission")}
+                        {t("statusPublished")}
                       </Badge>
-                    </TableCell>
-                    <TableCell className="text-right text-xs tabular-nums">
-                      {formatInstalls(item.skill.installs)}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {item.published ? (
-                        <Badge
-                          variant="outline"
-                          className="rounded-full border-emerald-500/40 bg-emerald-500/10 text-[11px] text-emerald-700 dark:text-emerald-300"
-                        >
-                          {t("statusPublished")}
-                        </Badge>
-                      ) : (
-                        <Badge
-                          variant="outline"
-                          className="rounded-full text-[11px]"
-                        >
-                          {t("statusUnpublished")}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Switch
-                        checked={item.published}
-                        onCheckedChange={(v) => handleToggle(item, v)}
-                        aria-label={
-                          item.published
-                            ? `${t("unpublishAria")} ${pickLocale(item.skill.name, locale)}`
-                            : `${t("publishAriaPrefix")} ${pickLocale(item.skill.name, locale)} ${t("publishAriaSuffix")}`
-                        }
-                      />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="inline-flex items-center gap-1">
-                        {!item.published && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-rose-600 hover:bg-rose-500/10 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 h-8 px-2"
-                            onClick={() => handleDelete(item)}
-                            aria-label={`${t("deleteAria")} ${pickLocale(item.skill.name, locale)}`}
-                          >
-                            <Trash2 className="size-3.5" />
-                          </Button>
-                        )}
+                    ) : (
+                      <Badge variant="outline" className="rounded-full text-[11px]">
+                        {t("statusUnpublished")}
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Switch
+                      checked={item.published}
+                      onCheckedChange={(v) => handleToggle(item, v)}
+                      aria-label={
+                        item.published
+                          ? `${t("unpublishAria")} ${pickLocale(item.name, locale)}`
+                          : `${t("publishAriaPrefix")} ${pickLocale(item.name, locale)} ${t("publishAriaSuffix")}`
+                      }
+                    />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="inline-flex items-center gap-1">
+                      {!item.published && (
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-8 px-2"
-                          onClick={() => {
-                            setEditing(item);
-                            setEditOpen(true);
-                          }}
-                          aria-label={`${t("editAria")} ${pickLocale(item.skill.name, locale)}`}
+                          className="text-rose-600 hover:bg-rose-500/10 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 h-8 px-2"
+                          onClick={() => handleDelete(item)}
+                          aria-label={`${t("deleteAria")} ${pickLocale(item.name, locale)}`}
                         >
-                          <Pencil className="size-3.5" />
+                          <Trash2 className="size-3.5" />
                         </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2"
+                        onClick={() => {
+                          setEditing(item);
+                          setEditOpen(true);
+                        }}
+                        aria-label={`${t("editAria")} ${pickLocale(item.name, locale)}`}
+                      >
+                        <Pencil className="size-3.5" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         )}
       </div>
 
       <AdminSkillEditSheet
-        item={editing}
+        skill={editing}
         open={editOpen}
         onOpenChange={setEditOpen}
-        onSaved={refresh}
+        onSaved={() => utils.skill.adminList.invalidate()}
       />
     </div>
   );

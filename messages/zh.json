@@ -71,7 +71,7 @@
     },
     "listings": {
       "title": "市场资源管理",
-      "subtitle": "统一管理「精选 Skill」在用户端 /skills_marketplace 的露出 —— 已上架对用户可见，待上架仅留在管理后台。待上架的资源可以直接删除（删除是不可逆的，请谨慎）。三方资源不在此处管理，直接以「来自社区，自行甄别」的方式展示在前台。",
+      "subtitle": "管理「精选 Skill」在前台市场的露出 —— 已上架对用户可见，待上架仅留在管理后台。待上架的 skill 可直接删除（不可逆，请谨慎）。",
       "sourceLabel": "来源",
       "statusLabel": "状态",
       "domainLabel": "领域",
@@ -84,7 +84,7 @@
       "domainAll": "全部领域",
       "searchPlaceholder": "搜索名称、作者、分类、标签",
       "emptyTitle": "没有符合条件的 skill",
-      "emptyHint": "调整筛选条件，或在「审批列表」里通过更多用户提交。",
+      "emptyHint": "调整筛选条件试试。",
       "colName": "名称",
       "colCategory": "分类",
       "colAuthor": "作者",
@@ -101,7 +101,9 @@
       "deleteAria": "删除",
       "editAria": "编辑",
       "deleteConfirmPrefix": "确认删除",
-      "deleteConfirmSuffix": "？该 skill 将从市场资源管理中移除，且无法在用户端展示。"
+      "deleteConfirmSuffix": "？该 skill 将从市场资源管理中移除，且无法在用户端展示。",
+      "logout": "退出登录",
+      "loading": "加载中…"
     },
     "detail": {
       "notFoundTitle": "提交不存在",

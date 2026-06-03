@@ -6,11 +6,12 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "~/server/db";
+import { readSessionCookie, verifyAdminSession } from "~/server/auth";
 
 /**
  * 1. CONTEXT
@@ -25,8 +26,12 @@ import { db } from "~/server/db";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
+  const isAdmin = await verifyAdminSession(
+    readSessionCookie(opts.headers.get("cookie")),
+  );
   return {
     db,
+    isAdmin,
     ...opts,
   };
 };
@@ -104,3 +109,15 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * are logged in.
  */
 export const publicProcedure = t.procedure.use(timingMiddleware);
+
+/**
+ * Admin-only procedure — requires a valid admin session cookie.
+ */
+export const protectedProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(({ ctx, next }) => {
+    if (!ctx.isAdmin) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+    return next({ ctx });
+  });
