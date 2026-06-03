@@ -13,6 +13,11 @@ export const env = createEnv({
       .default("development"),
     ADMIN_PASSWORD: z.string().min(1),
     AUTH_SECRET: z.string().min(16),
+    S3_ENDPOINT: z.string().url(),
+    S3_ACCESS_KEY: z.string().min(1),
+    S3_SECRET_KEY: z.string().min(1),
+    S3_BUCKET: z.string().min(1),
+    APP_URL: z.string().url(),
   },
 
   /**
@@ -33,6 +38,11 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
     AUTH_SECRET: process.env.AUTH_SECRET,
+    S3_ENDPOINT: process.env.S3_ENDPOINT,
+    S3_ACCESS_KEY: process.env.S3_ACCESS_KEY,
+    S3_SECRET_KEY: process.env.S3_SECRET_KEY,
+    S3_BUCKET: process.env.S3_BUCKET,
+    APP_URL: process.env.APP_URL,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
