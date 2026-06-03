@@ -49,6 +49,12 @@ describe("POST /api/admin/skills/[id]/package (integration)", () => {
     expect((await post("nope", bigZip(), `admin_session=${token}`)).status).toBe(404);
   });
 
+  it("400 on invalid zip", async () => {
+    const token = await createAdminSession();
+    const res = await post(ID, Buffer.from("not a zip"), `admin_session=${token}`);
+    expect(res.status).toBe(400);
+  });
+
   it("overwrites package + updates size", async () => {
     const token = await createAdminSession();
     const res = await post(ID, bigZip(), `admin_session=${token}`);
