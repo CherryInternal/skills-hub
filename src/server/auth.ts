@@ -40,3 +40,8 @@ export function readSessionCookie(
   }
   return undefined;
 }
+
+/** Route Handler 用:从请求 cookie 判断是否为合法 admin。 */
+export async function isAdminRequest(req: Request): Promise<boolean> {
+  return verifyAdminSession(readSessionCookie(req.headers.get("cookie")));
+}
