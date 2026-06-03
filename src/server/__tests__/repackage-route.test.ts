@@ -13,7 +13,7 @@ function bigZip(): Buffer {
 
 function post(id: string, pkg: Buffer, cookie?: string): Promise<Response> {
   const f = new FormData();
-  f.set("package", new File([pkg], "new.zip", { type: "application/zip" }));
+  f.set("package", new File([new Uint8Array(pkg)], "new.zip", { type: "application/zip" }));
   return POST(
     new Request(`http://localhost/api/admin/skills/${id}/package`, {
       method: "POST",
