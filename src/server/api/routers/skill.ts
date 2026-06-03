@@ -19,12 +19,14 @@ function toSkill(row: SkillRow) {
     author: row.author,
     version: row.version,
     tags: row.tags,
-    install: row.install,
-    docsUrl: row.docsUrl,
+    docsUrl: row.docsUrl ?? undefined,
     homepage: row.homepage ?? undefined,
     githubRepoUrl: row.githubRepoUrl ?? undefined,
     sourceUrl: row.sourceUrl ?? undefined,
-    installs: row.installs,
+    packageName: row.packageName ?? undefined,
+    packageSize: row.packageSize ?? undefined,
+    hasPackage: row.packageKey != null, // 前台据此显示下载 UI;不暴露内部 key
+    downloads: row.downloads,
     rating: row.rating,
     releaseDate: row.releaseDate.toISOString().slice(0, 10),
     published: row.published,
@@ -32,7 +34,7 @@ function toSkill(row: SkillRow) {
 }
 
 const ORDER: Record<string, Prisma.SkillOrderByWithRelationInput> = {
-  popular: { installs: "desc" },
+  popular: { downloads: "desc" },
   newest: { releaseDate: "desc" },
   rating: { rating: "desc" },
   name_asc: { nameEn: "asc" },
@@ -50,12 +52,10 @@ const skillInput = z.object({
   author: z.string(),
   version: z.string(),
   tags: z.array(z.string()),
-  install: z.string(),
-  docsUrl: z.string(),
+  docsUrl: z.string().nullish(),
   homepage: z.string().nullish(),
   githubRepoUrl: z.string().nullish(),
   sourceUrl: z.string().nullish(),
-  installs: z.number().default(0),
   rating: z.number().default(0),
   releaseDate: z.string(),
   published: z.boolean().default(true),
@@ -133,14 +133,6 @@ export const skillRouter = createTRPCRouter({
       });
       return { ok: true };
     }),
-
-  create: protectedProcedure.input(skillInput).mutation(async ({ ctx, input }) => {
-    const { releaseDate, ...rest } = input;
-    const row = await ctx.db.skill.create({
-      data: { ...rest, releaseDate: new Date(releaseDate) },
-    });
-    return toSkill(row);
-  }),
 
   update: protectedProcedure
     .input(skillInput.partial().extend({ id: z.string() }))
