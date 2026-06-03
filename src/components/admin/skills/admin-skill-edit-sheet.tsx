@@ -27,6 +27,7 @@ import { api, type RouterOutputs } from "~/trpc/react";
 export type AdminSkill = RouterOutputs["skill"]["adminList"][number];
 
 interface FormState {
+  id: string;
   name: string;
   domain: string;
   author: string;
@@ -34,15 +35,30 @@ interface FormState {
   description: string;
   longDescription: string;
   tagsCsv: string;
-  install: string;
   docsUrl: string;
   homepage: string;
   githubRepoUrl: string;
   sourceUrl: string;
 }
 
+const EMPTY_FORM: FormState = {
+  id: "",
+  name: "",
+  domain: SKILL_DOMAINS[0],
+  author: "",
+  version: "0.1.0",
+  description: "",
+  longDescription: "",
+  tagsCsv: "",
+  docsUrl: "",
+  homepage: "",
+  githubRepoUrl: "",
+  sourceUrl: "",
+};
+
 function toForm(s: AdminSkill): FormState {
   return {
+    id: s.id,
     name: pickLocale(s.name, "en"),
     domain: s.domain,
     author: s.author,
@@ -50,8 +66,7 @@ function toForm(s: AdminSkill): FormState {
     description: pickLocale(s.description, "en"),
     longDescription: pickLocale(s.longDescription, "en"),
     tagsCsv: s.tags.join(", "),
-    install: s.install,
-    docsUrl: s.docsUrl,
+    docsUrl: s.docsUrl ?? "",
     homepage: s.homepage ?? "",
     githubRepoUrl: s.githubRepoUrl ?? "",
     sourceUrl: s.sourceUrl ?? "",
@@ -73,19 +88,18 @@ export function AdminSkillEditSheet({
 }: AdminSkillEditSheetProps) {
   const t = useTranslations("admin.edit");
   const [form, setForm] = useState<FormState | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const isCreate = skill === null;
 
-  const update = api.skill.update.useMutation({
-    onSuccess: () => {
-      onSaved();
-      onOpenChange(false);
-    },
-  });
+  const update = api.skill.update.useMutation();
 
   useEffect(() => {
-    setForm(skill ? toForm(skill) : null);
+    setForm(skill ? toForm(skill) : { ...EMPTY_FORM });
+    setFile(null);
   }, [skill]);
 
-  if (!skill || !form) {
+  if (!form) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent className="w-full sm:max-w-xl" />
@@ -96,35 +110,98 @@ export function AdminSkillEditSheet({
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => (f ? { ...f, [key]: value } : f));
 
-  const handleSave = () => {
-    update.mutate({
-      id: skill.id,
-      nameEn: form.name.trim(),
-      domain: form.domain,
-      author: form.author.trim(),
-      version: form.version.trim(),
-      descriptionEn: form.description.trim(),
-      longDescEn: form.longDescription.trim(),
-      tags: form.tagsCsv
-        .split(",")
-        .map((tg) => tg.trim())
-        .filter(Boolean),
-      install: form.install.trim(),
-      docsUrl: form.docsUrl.trim(),
-      homepage: form.homepage.trim() || null,
-      githubRepoUrl: form.githubRepoUrl.trim() || null,
-      sourceUrl: form.sourceUrl.trim() || null,
-    });
+  const buildFormData = (): FormData => {
+    const fd = new FormData();
+    if (file) fd.set("package", file);
+    fd.set("id", skill?.id ?? form.id);
+    fd.set("nameEn", form.name.trim());
+    fd.set("descriptionEn", form.description.trim());
+    fd.set("longDescEn", form.longDescription.trim());
+    fd.set("domain", form.domain);
+    fd.set("author", form.author.trim());
+    fd.set("version", form.version.trim());
+    fd.set("tags", form.tagsCsv);
+    fd.set("docsUrl", form.docsUrl.trim());
+    fd.set("homepage", form.homepage.trim());
+    fd.set("githubRepoUrl", form.githubRepoUrl.trim());
+    fd.set("sourceUrl", form.sourceUrl.trim());
+    fd.set("releaseDate", new Date().toISOString().slice(0, 10));
+    return fd;
+  };
+
+  const handleSave = async () => {
+    setBusy(true);
+    try {
+      if (isCreate) {
+        if (!file) {
+          alert("新建 skill 必须上传 zip 包");
+          return;
+        }
+        const res = await fetch("/api/admin/skills", {
+          method: "POST",
+          body: buildFormData(),
+        });
+        if (!res.ok)
+          throw new Error(
+            ((await res.json()) as { error?: string }).error ?? "上传失败",
+          );
+      } else {
+        // 元数据走 tRPC update
+        await update.mutateAsync({
+          id: skill.id,
+          nameEn: form.name.trim(),
+          domain: form.domain,
+          author: form.author.trim(),
+          version: form.version.trim(),
+          descriptionEn: form.description.trim(),
+          longDescEn: form.longDescription.trim(),
+          tags: form.tagsCsv
+            .split(",")
+            .map((tg) => tg.trim())
+            .filter(Boolean),
+          docsUrl: form.docsUrl.trim() || null,
+          homepage: form.homepage.trim() || null,
+          githubRepoUrl: form.githubRepoUrl.trim() || null,
+          sourceUrl: form.sourceUrl.trim() || null,
+        });
+        // 若另选了新 zip,换包
+        if (file) {
+          const fd = new FormData();
+          fd.set("package", file);
+          const res = await fetch(`/api/admin/skills/${skill.id}/package`, {
+            method: "POST",
+            body: fd,
+          });
+          if (!res.ok)
+            throw new Error(
+              ((await res.json()) as { error?: string }).error ?? "换包失败",
+            );
+        }
+      }
+      setFile(null);
+      onSaved();
+      onOpenChange(false);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "保存失败");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
         <SheetHeader>
-          <SheetTitle>{t("title")}</SheetTitle>
+          <SheetTitle>{isCreate ? "新建 skill" : t("title")}</SheetTitle>
           <SheetDescription>
-            id <span className="font-[Menlo,monospace]">{skill.id}</span>
-            {t("descSuffix")}
+            {isCreate ? (
+              "上传 skill 包(zip)并填写元数据"
+            ) : (
+              <>
+                id <span className="font-[Menlo,monospace]">{skill.id}</span>
+                {t("descSuffix")}
+              </>
+            )}
           </SheetDescription>
         </SheetHeader>
 
@@ -133,6 +210,29 @@ export function AdminSkillEditSheet({
             <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
               {t("sectionBasic")}
             </h3>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-pkg">
+                {isCreate ? "Skill 包(zip,必填)" : "替换包(zip,可选)"}
+              </Label>
+              <Input
+                id="edit-pkg"
+                type="file"
+                accept=".zip,application/zip"
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              />
+            </div>
+            {isCreate && (
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-id">id(kebab-case slug)</Label>
+                <Input
+                  id="edit-id"
+                  value={form.id}
+                  onChange={(e) => set("id", e.target.value)}
+                  placeholder="my-skill"
+                  className="font-[Menlo,monospace] text-xs"
+                />
+              </div>
+            )}
             <div className="space-y-1.5">
               <Label htmlFor="edit-name">{t("labelName")}</Label>
               <Input
@@ -216,15 +316,6 @@ export function AdminSkillEditSheet({
             <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
               {t("sectionInstall")}
             </h3>
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-install">{t("labelInstall")}</Label>
-              <Input
-                id="edit-install"
-                value={form.install}
-                onChange={(e) => set("install", e.target.value)}
-                className="font-[Menlo,monospace] text-xs"
-              />
-            </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="edit-docs">Docs URL</Label>
@@ -270,10 +361,10 @@ export function AdminSkillEditSheet({
           </Button>
           <Button
             onClick={handleSave}
-            disabled={update.isPending}
+            disabled={busy}
             className="bg-foreground text-background hover:bg-foreground/90"
           >
-            {update.isPending ? `${t("save")}…` : t("save")}
+            {busy ? "保存中…" : t("save")}
           </Button>
         </SheetFooter>
       </SheetContent>
