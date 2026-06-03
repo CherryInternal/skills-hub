@@ -18,5 +18,13 @@ Key routes:
 - `/admin/skills` — admin console (curated catalog, review queue, listings)
 - `/api/marketplace/listings` — public listings API
 
+## 本地数据初始化
+
+1. 起依赖:`docker compose up -d db rustfs`
+2. 迁移:`pnpm exec prisma migrate dev`
+3. 灌演示数据(会把 demo 包上传到 RustFS):`pnpm exec tsx prisma/seed.ts`
+
+> seed 依赖 RustFS 在跑(它会上传 `prisma/demo-packages/*` 的 zip)。
+
 > **Status:** the data layer is currently mock (localStorage + static arrays).
 > The real backend (Prisma + tRPC) and admin auth are in progress.
