@@ -44,4 +44,16 @@ describe("GET /api/skills/[id]/download (integration)", () => {
     await db.skill.update({ where: { id: ID }, data: { packageKey: null } });
     expect((await get(ID)).status).toBe(404);
   });
+
+  it("sanitizes CRLF in packageName so the redirect location stays single-line", async () => {
+    await db.skill.update({
+      where: { id: ID },
+      data: { packageName: 'evil\r\nSet-Cookie: x=1";name.zip' },
+    });
+    const res = await get(ID);
+    expect(res.status).toBe(302);
+    const location = res.headers.get("location") ?? "";
+    expect(location).not.toContain("\r");
+    expect(location).not.toContain("\n");
+  });
 });
