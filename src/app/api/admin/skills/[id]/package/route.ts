@@ -30,16 +30,40 @@ export async function POST(
   }
 
   const key = `skills/${id}.zip`;
-  await ensureBucket();
-  await putObject(key, buf); // 固定 key,put 即覆盖
-  await db.skill.update({
-    where: { id },
-    data: {
-      packageKey: key,
-      packageName: file.name,
-      packageSize: buf.byteLength,
-      packageUploadedAt: new Date(),
-    },
-  });
+
+  // Storage-first, then metadata. The key is fixed (`skills/<id>.zip`), so
+  // putObject overwrites in place — there is no orphan to clean up and no
+  // rollback needed: a failed put leaves the previous valid object untouched,
+  // and a failed update after a successful put only leaves stale
+  // packageName/packageSize while the (new) object is already valid. Both ops
+  // are wrapped so a storage outage or DB failure surfaces as the project's
+  // { error } JSON (500) rather than an unstyled Next.js 500.
+  try {
+    await ensureBucket();
+    await putObject(key, buf); // 固定 key,put 即覆盖
+  } catch {
+    return NextResponse.json(
+      { error: "Failed to store package." },
+      { status: 500 },
+    );
+  }
+
+  try {
+    await db.skill.update({
+      where: { id },
+      data: {
+        packageKey: key,
+        packageName: file.name,
+        packageSize: buf.byteLength,
+        packageUploadedAt: new Date(),
+      },
+    });
+  } catch {
+    return NextResponse.json(
+      { error: "Failed to update skill package metadata." },
+      { status: 500 },
+    );
+  }
+
   return NextResponse.json({ ok: true });
 }
