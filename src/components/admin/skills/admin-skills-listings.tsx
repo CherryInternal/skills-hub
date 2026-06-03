@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { LogOut, Pencil, Search, Store, Trash2 } from "lucide-react";
+import { LogOut, Pencil, Plus, Search, Store, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +38,7 @@ const STATUS_TABS: Array<{ key: StatusFilter; labelKey: string }> = [
   { key: "unpublished", labelKey: "statusUnpublished" },
 ];
 
-function formatInstalls(n: number): string {
+function formatDownloads(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return String(n);
@@ -102,7 +102,7 @@ export function AdminSkillsListings() {
     }
     return list.sort((a, b) => {
       if (a.published !== b.published) return a.published ? -1 : 1;
-      return b.installs - a.installs;
+      return b.downloads - a.downloads;
     });
   }, [items, status, domain, search]);
 
@@ -134,12 +134,26 @@ export function AdminSkillsListings() {
           </div>
           <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
         </div>
-        <form action={logout}>
-          <Button type="submit" variant="outline" size="sm" className="h-9 gap-1.5">
-            <LogOut className="size-3.5" />
-            {t("logout")}
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            size="sm"
+            className="bg-foreground text-background hover:bg-foreground/90 h-9 gap-1.5"
+            onClick={() => {
+              setEditing(null);
+              setEditOpen(true);
+            }}
+          >
+            <Plus className="size-3.5" />
+            新建 skill
           </Button>
-        </form>
+          <form action={logout}>
+            <Button type="submit" variant="outline" size="sm" className="h-9 gap-1.5">
+              <LogOut className="size-3.5" />
+              {t("logout")}
+            </Button>
+          </form>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -247,7 +261,7 @@ export function AdminSkillsListings() {
                     {item.author}
                   </TableCell>
                   <TableCell className="text-right text-xs tabular-nums">
-                    {formatInstalls(item.installs)}
+                    {formatDownloads(item.downloads)}
                   </TableCell>
                   <TableCell className="text-center">
                     {item.published ? (
