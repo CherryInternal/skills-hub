@@ -1,5 +1,5 @@
 import { PrismaClient } from "../generated/prisma";
-import { SKILLS } from "../src/components/skills/skills-data";
+import { SKILLS } from "./demo-seed";
 
 const db = new PrismaClient();
 
