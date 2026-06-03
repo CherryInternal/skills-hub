@@ -45,7 +45,7 @@ admin 上传(元数据 + zip)
 下载按钮 / agent 提示词
         └─→ GET /api/skills/<id>/download(公开, 限流)
                 ├─ 从 RustFS 取包 → 流式返回 zip
-                └─ downloads += 1(去重)
+                └─ downloads += 1
 ```
 
 **核心思路**:元数据继续走 Postgres,**内容(zip)走 RustFS**;数据库里只存一个指向包的「指针」(`packageKey` + 元信息),性质同原来的 `install` 字段 —— 指针从「外部命令」换成「自有存储里的对象」。
@@ -116,7 +116,7 @@ admin 填元数据 + 选 zip ──→ POST /api/admin/skills  (multipart)
 ```
 查 db 拿 packageKey ─→ 从 RustFS 取 ─→ 流式返回 zip
    Content-Disposition: attachment; filename="<packageName>"
-   downloads += 1(去重)
+   downloads += 1
 无包(packageKey 为空)─→ 404
 ```
 
@@ -133,7 +133,7 @@ admin 填元数据 + 选 zip ──→ POST /api/admin/skills  (multipart)
 
 **限流与计数**(下载接口是公开 + 匿名 + 可拉 50MB 的端点,需防滥用):
 - **IP 限流**:每 IP 每分钟最多 30 次下载,超限返回 429。
-- **计数去重**:同一 IP 对同一 skill 在 1 小时内只 `+1`,使 `downloads` 更真实。
+- **计数**:每次合法下载 `downloads += 1`(总下载次数);不去重 —— 防刷交给 IP 限流负责。
 - 实现走 `RateLimiter` 抽象接口(见 §8),第一期 in-memory。
 
 **绝对 URL 配置**:agent 提示词需带域名的绝对链接,新增站点根地址环境变量(如 `APP_URL`);本地 `http://localhost:3000`,生产填真域名。
@@ -188,7 +188,7 @@ seed 从此依赖 RustFS(需先起容器),将写入 README。
 | 8 | `docsUrl` 改可选;`installs` 改名 `downloads`(真实计数) |
 | 9 | admin 录入:一步提交(元数据 + zip 一起),包必填、原子 |
 | 10 | demo:清空 54 条,重写约 5 条带真包样板 |
-| 11 | 下载接口加 IP 限流 + 计数去重 |
+| 11 | 下载接口加 IP 限流;downloads = 总下载次数(每次 +1,不去重) |
 | 12 | 第一期单机自托管;存储与限流均做可替换抽象层 |
 
 ## 10. 风险与开放问题
