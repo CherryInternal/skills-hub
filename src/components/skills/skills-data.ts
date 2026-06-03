@@ -1,5 +1,3 @@
-export type SkillSource = "curated" | "third_party";
-
 export const SKILL_DOMAINS = [
   "AI & Agents",
   "Productivity",
@@ -46,13 +44,6 @@ export interface Skill {
   hasPackage?: boolean;
   uploadedFile?: string;
   releaseDate: string;
-  source?: SkillSource;
-  sourceFeed?: string;
-  // Multi-source aggregation: when a skill is found in N third-party feeds,
-  // we merge them and list all here. The first entry is `sourceFeed`.
-  feeds?: string[];
-  // Last time this skill was refreshed by the feed-sync job.
-  lastSyncedAt?: string;
 }
 
 // ─── Domain labels (i18n) ──────────────────────────────────────
