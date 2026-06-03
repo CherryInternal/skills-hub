@@ -18,7 +18,7 @@ function zip(): Buffer {
 
 function form(pkg: Buffer): FormData {
   const f = new FormData();
-  f.set("package", new File([pkg], "skill.zip", { type: "application/zip" }));
+  f.set("package", new File([new Uint8Array(pkg)], "skill.zip", { type: "application/zip" }));
   const meta: Record<string, string> = {
     id: ID,
     nameEn: "Test",
