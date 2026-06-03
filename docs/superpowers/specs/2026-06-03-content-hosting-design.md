@@ -44,8 +44,8 @@ admin 上传(元数据 + zip)
 
 下载按钮 / agent 提示词
         └─→ GET /api/skills/<id>/download(公开, 限流)
-                ├─ 从 RustFS 取包 → 流式返回 zip
-                └─ downloads += 1
+                ├─ downloads += 1
+                └─ 签发短期预签名 URL → 302 重定向 → 客户端直连 RustFS 下载 zip
 ```
 
 **核心思路**:元数据继续走 Postgres,**内容(zip)走 RustFS**;数据库里只存一个指向包的「指针」(`packageKey` + 元信息),性质同原来的 `install` 字段 —— 指针从「外部命令」换成「自有存储里的对象」。
@@ -57,7 +57,7 @@ admin 上传(元数据 + zip)
 | RustFS 容器 | docker-compose 加一个服务(S3 API :9000),与 Postgres 并列 |
 | 存储抽象层 `src/server/storage.ts` | 用 S3 SDK 封装 `put / get / delete`,隔离 RustFS;以后换托管 S3 只改此处 |
 | 上传接口(Route Handler) | 收 multipart(元数据 + zip)→ 校验 → 存 RustFS → 写 db |
-| 下载接口 `/api/skills/[id]/download` | 从 RustFS 取包流式返回 + 限流 + 计数 |
+| 下载接口 `/api/skills/[id]/download` | 限流 + 计数 + 签发预签名 URL,302 重定向到 RustFS 直链(后端不经手文件) |
 | agent 提示词模板 | 前端 next-intl 模板(中英),填入下载链接 |
 
 ## 4. 数据模型
@@ -114,11 +114,16 @@ admin 填元数据 + 选 zip ──→ POST /api/admin/skills  (multipart)
 
 **下载接口** `GET /api/skills/<id>/download`(公开,无需登录 —— agent 需直接访问,且 curated 市场本就公开):
 ```
-查 db 拿 packageKey ─→ 从 RustFS 取 ─→ 流式返回 zip
-   Content-Disposition: attachment; filename="<packageName>"
-   downloads += 1
-无包(packageKey 为空)─→ 404
+查 db 拿 packageKey
+   无包(packageKey 为空)──→ 404
+   有包:
+     downloads += 1
+     签发短期预签名 URL(指向 RustFS 对象,
+       带 response-content-disposition=attachment; filename=<packageName>)
+     ──→ 302 重定向 ──→ 客户端(浏览器 / curl / agent)跟随,直连 RustFS 下载 zip
 ```
+
+**后端只做「查 db + 计数 + 签发链接 + 302」,不经手文件本身** —— 50MB 流量直连 RustFS、不过 Next 后端,省带宽、更可扩展。对外接口 `/api/skills/<id>/download` 稳定不变(agent 提示词、按钮都用它);预签名 URL 每次访问临时签发、客户端几秒内跟随用掉,所以「预签名会过期」不影响放进提示词的稳定接口。客户端需跟随 302(`curl -L`;多数 HTTP 库默认跟随)。
 
 **两个入口,共用此接口:**
 1. **下载按钮**(详情页,给人):点击直接下 zip;无包时灰掉。
@@ -171,7 +176,7 @@ seed 从此依赖 RustFS(需先起容器),将写入 README。
 **第一期部署**:单机 / Docker 自托管(Postgres + RustFS + Next 同机)。
 
 **为未来(多实例 / 托管化)预留的抽象层:**
-- **存储**:`src/server/storage.ts` 用 S3 SDK 抽象,RustFS ↔ 托管 S3 / 阿里云 OSS 可换实现。
+- **存储**:`src/server/storage.ts` 用 S3 SDK 抽象(`put / get / delete / 签发预签名 URL`),RustFS ↔ 托管 S3 / 阿里云 OSS 可换实现。
 - **限流**:`RateLimiter` 接口(如 `check(key, limit, windowMs): Promise<boolean>`),第一期 in-memory 实现;上多实例 / serverless 时换 Redis / Upstash 实现,调用方(下载接口)不变。
 
 ## 9. 决策记录
@@ -184,7 +189,7 @@ seed 从此依赖 RustFS(需先起容器),将写入 README。
 | 4 | 包↔skill:单包覆盖,不留历史版本;`version` 保留当展示 |
 | 5 | 移除 `install` 字段 |
 | 6 | 安装:不做给人的图文;全局统一 agent 提示词模板(中英),填入下载链接 |
-| 7 | 下载:下载按钮 + 后端稳定接口 `/api/skills/<id>/download`,流式 + 计数 |
+| 7 | 下载:下载按钮 + 后端稳定接口 `/api/skills/<id>/download`;302 重定向到 RustFS 预签名直链 + 计数(后端不经手文件) |
 | 8 | `docsUrl` 改可选;`installs` 改名 `downloads`(真实计数) |
 | 9 | admin 录入:一步提交(元数据 + zip 一起),包必填、原子 |
 | 10 | demo:清空 54 条,重写约 5 条带真包样板 |
@@ -194,6 +199,7 @@ seed 从此依赖 RustFS(需先起容器),将写入 README。
 ## 10. 风险与开放问题
 
 - **RustFS 成熟度**:官方 Docker 镜像页标注「暂勿用于生产」。第一期开发 / 内测可用;上线前需评估,或切换到托管 S3(SDK 一致,改动小)。
+- **需验证 RustFS 预签名 URL(presigned GET)支持**:预签名是 S3 标准功能,RustFS 宣称 S3 兼容,预期支持;实现时先验证。若不支持,下载接口回退为「后端流式代理」(对外接口与 agent 提示词不变,仅实现方式回退)。
 - **in-memory 限流仅单实例有效**:多实例需换 Redis(已抽象,改动可控)。
 - **逻辑事务非真事务**:RustFS 与 Postgres 跨系统,失败补偿(删已传对象 / 回滚记录)需实现稳妥,避免孤儿对象或孤儿记录。
 - **demo zip 需真实编写**:5 条样板 skill 的 SKILL.md 要有实际内容,使「下载→解压→agent 执行」链路可真实演示。
