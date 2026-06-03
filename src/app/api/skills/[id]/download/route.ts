@@ -32,9 +32,12 @@ export async function GET(
     data: { downloads: { increment: 1 } },
   });
 
-  const url = await getPresignedUrl(
-    skill.packageKey,
-    skill.packageName ?? `${id}.zip`,
+  // packageName 来自上传文件名,消毒后再进预签名 URL 的 Content-Disposition,
+  // 防 header 注入(去掉控制字符、引号、分号、反斜杠)。
+  const safeName = (skill.packageName ?? `${id}.zip`).replace(
+    /[\r\n";\\]/g,
+    "_",
   );
+  const url = await getPresignedUrl(skill.packageKey, safeName);
   return NextResponse.redirect(url, 302);
 }
