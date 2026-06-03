@@ -3,7 +3,12 @@ import { afterEach, describe, expect, it } from "vitest";
 import { POST } from "~/app/api/admin/skills/route";
 import { createAdminSession } from "~/server/auth";
 import { db } from "~/server/db";
-import { deleteObject } from "~/server/storage";
+import {
+  deleteObject,
+  ensureBucket,
+  getPresignedUrl,
+  putObject,
+} from "~/server/storage";
 
 const ID = "test-upload-skill";
 
@@ -62,5 +67,49 @@ describe("POST /api/admin/skills (integration)", () => {
     const token = await createAdminSession();
     const res = await post(form(Buffer.from("not a zip")), `admin_session=${token}`);
     expect(res.status).toBe(400);
+  });
+
+  it("conflicts on duplicate id without clobbering the existing package", async () => {
+    const key = `skills/${ID}.zip`;
+    // Pre-seed an existing skill whose package object holds known bytes.
+    await ensureBucket();
+    const original = Buffer.from(zipSync({ "SKILL.md": strToU8("# ORIGINAL") }));
+    await putObject(key, original);
+    await db.skill.create({
+      data: {
+        id: ID,
+        nameEn: "Existing",
+        descriptionEn: "d",
+        longDescEn: "l",
+        domain: "Other",
+        author: "owner",
+        version: "1.0.0",
+        tags: [],
+        releaseDate: new Date(),
+        packageKey: key,
+        packageName: "existing.zip",
+        packageSize: original.byteLength,
+        packageUploadedAt: new Date(),
+      },
+    });
+
+    // A different uploader reuses the same id with different bytes.
+    const token = await createAdminSession();
+    const res = await post(form(zip()), `admin_session=${token}`);
+
+    // Must signal conflict, never 200/success.
+    expect(res.status).toBe(409);
+
+    // The existing skill's package object must be untouched (same bytes).
+    const url = await getPresignedUrl(key, "check.zip");
+    const fetched = await fetch(url);
+    expect(fetched.status).toBe(200);
+    const bytes = Buffer.from(await fetched.arrayBuffer());
+    expect(bytes.equals(original)).toBe(true);
+
+    // And the existing skill row is unchanged.
+    const row = await db.skill.findUnique({ where: { id: ID } });
+    expect(row?.packageName).toBe("existing.zip");
+    expect(row?.author).toBe("owner");
   });
 });

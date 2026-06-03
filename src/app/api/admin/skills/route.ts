@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { Prisma } from "../../../../../generated/prisma";
 import { isAdminRequest } from "~/server/auth";
 import { db } from "~/server/db";
 import { validateSkillZip } from "~/server/skill-package";
-import { deleteObject, ensureBucket, putObject } from "~/server/storage";
+import { ensureBucket, putObject } from "~/server/storage";
 
 const metaSchema = z.object({
   id: z.string().min(1),
@@ -51,10 +52,14 @@ export async function POST(req: Request) {
   const m = parsed.data;
   const key = `skills/${m.id}.zip`;
 
-  await ensureBucket();
-  await putObject(key, buf);
+  // DB-first ordering: create the row before touching storage. A duplicate id
+  // fails here on the unique constraint *before* any object write, so an
+  // existing skill's package can never be overwritten (or destructively
+  // deleted by a compensation path). Storage is written only after the row is
+  // safely reserved.
+  let created;
   try {
-    const skill = await db.skill.create({
+    created = await db.skill.create({
       data: {
         id: m.id,
         nameEn: m.nameEn,
@@ -79,13 +84,36 @@ export async function POST(req: Request) {
         published: true,
       },
     });
-    return NextResponse.json({ ok: true, id: skill.id });
-  } catch {
-    // 补偿:db 写失败 → 删已传对象,避免孤儿
-    await deleteObject(key).catch(() => {});
+  } catch (e) {
+    // Only a unique-constraint violation is a real id conflict (409). Any other
+    // DB error is a genuine server failure (500), not a mislabeled conflict.
+    if (
+      e instanceof Prisma.PrismaClientKnownRequestError &&
+      e.code === "P2002"
+    ) {
+      return NextResponse.json(
+        { error: "A skill with this id already exists." },
+        { status: 409 },
+      );
+    }
     return NextResponse.json(
-      { error: "Failed to create skill (id may already exist)." },
-      { status: 409 },
+      { error: "Failed to create skill." },
+      { status: 500 },
     );
   }
+
+  try {
+    await ensureBucket();
+    await putObject(key, buf);
+  } catch {
+    // Storage failed after the row was reserved → roll back the row so we don't
+    // leave a skill whose packageKey points at a missing object.
+    await db.skill.delete({ where: { id: created.id } }).catch(() => {});
+    return NextResponse.json(
+      { error: "Failed to store package." },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json({ ok: true, id: created.id });
 }
