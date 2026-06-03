@@ -34,7 +34,6 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { pickLocale, type Skill } from "./skills-data";
 import { useLocale, useTranslations } from "next-intl";
@@ -216,90 +215,58 @@ function buildReviews(skill: Skill) {
   return reviewers.map((r, i) => ({ ...r, quote: quotes[i]!, stars: stars[i]! }));
 }
 
-// ─── install panel ───────────────────────────────────────────
+// ─── download panel ──────────────────────────────────────────
 
-function InstallPanel({ skill }: { skill: Skill }) {
+function DownloadPanel({ skill }: { skill: Skill }) {
   const t = useTranslations("detail");
-  const [mode, setMode] = useState<"agent" | "human">("agent");
-  const [platform, setPlatform] = useState<Platform>("claude-code");
-  const [copiedPrompt, setCopiedPrompt] = useState(false);
-  const [copiedCmd, setCopiedCmd] = useState(false);
+  const locale = useLocale();
+  const [copied, setCopied] = useState(false);
 
-  const agentPrompt = `Install ${pickLocale(skill.name, "en")} from the CherryIN Skills Marketplace.
-Run: ${skill.install}
-Read: ${skill.docsUrl}
-Then follow the SKILL.md instructions in the installed directory.`;
+  if (!skill.hasPackage) {
+    return (
+      <div className="border-border bg-card text-muted-foreground rounded-xl border p-4 text-sm dark:border-white/[0.12]">
+        {t("noPackage")}
+      </div>
+    );
+  }
 
-  const platformCommand = (() => {
-    switch (platform) {
-      case "claude-code":
-        return skill.install;
-      case "codex":
-        return `codex skill add ${skill.id}`;
-      case "cursor":
-        return `cursor extension install ${skill.id}`;
-      case "vscode":
-        return `code --install-extension ${skill.id}`;
-      case "cline":
-        return `cline mcp install ${skill.id}`;
-    }
-  })();
+  const downloadUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/api/skills/${skill.id}/download`
+      : `/api/skills/${skill.id}/download`;
 
-  const copy = (text: string, setter: (v: boolean) => void) => {
-    void navigator.clipboard.writeText(text);
-    setter(true);
-    setTimeout(() => setter(false), 1500);
+  const prompt = t("agentPromptTemplate", {
+    name: pickLocale(skill.name, locale),
+    url: downloadUrl,
+  });
+
+  const copyPrompt = () => {
+    void navigator.clipboard.writeText(prompt);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
   };
 
   return (
     <div className="border-border bg-card flex flex-col gap-3 rounded-xl border p-4 dark:border-white/[0.12]">
-      <div className="flex flex-col gap-1.5">
-        <Button
-          onClick={() => copy(skill.install, setCopiedCmd)}
-          className="bg-foreground text-background hover:bg-foreground/90 h-10 w-full"
+      <a
+        href={downloadUrl}
+        className="bg-foreground text-background hover:bg-foreground/90 inline-flex h-10 items-center justify-center gap-2 rounded-md text-sm font-medium"
+      >
+        <Download className="size-4" />
+        {t("download")}
+      </a>
+      <div className="bg-muted/40 border-border relative rounded-md border p-3 dark:border-white/[0.10]">
+        <pre className="text-foreground/90 max-h-36 overflow-y-auto pr-7 font-[Menlo,monospace] text-[11px] leading-relaxed whitespace-pre-wrap">
+          {prompt}
+        </pre>
+        <button
+          type="button"
+          onClick={copyPrompt}
+          className="hover:bg-accent text-muted-foreground hover:text-foreground absolute top-2 right-2 cursor-pointer rounded p-1"
+          title={copied ? t("agentPromptCopied") : t("copyAgentPrompt")}
         >
-          {copiedCmd ? (
-            <>
-              <Check className="size-4" />
-              {t("installCommandCopied")}
-            </>
-          ) : (
-            <>
-              <Download className="size-4" />
-              {t("copyInstallCommand")}
-            </>
-          )}
-        </Button>
-        <p className="text-muted-foreground text-[11px] leading-relaxed">
-          {t("copyInstallHint")}
-          <code className="bg-muted/60 text-foreground/80 ml-1 rounded px-1 py-0.5 font-[Menlo,monospace] text-[10px]">
-            {skill.install}
-          </code>
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <p className="text-muted-foreground text-[11px] leading-relaxed">
-          {t("agentPromptHint")}
-        </p>
-        <div className="bg-muted/40 border-border relative rounded-md border p-3 dark:border-white/[0.10]">
-          <pre className="text-foreground/90 max-h-36 overflow-y-auto pr-7 font-[Menlo,monospace] text-[11px] leading-relaxed whitespace-pre-wrap">
-            {agentPrompt}
-          </pre>
-          <button
-            type="button"
-            onClick={() => copy(agentPrompt, setCopiedPrompt)}
-            className="hover:bg-accent text-muted-foreground hover:text-foreground absolute top-2 right-2 cursor-pointer rounded p-1"
-            aria-label={t("copyPrompt")}
-            title={copiedPrompt ? t("promptCopied") : t("copyPrompt")}
-          >
-            {copiedPrompt ? (
-              <Check className="size-3.5 text-emerald-500" />
-            ) : (
-              <Copy className="size-3.5" />
-            )}
-          </button>
-        </div>
+          {copied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
+        </button>
       </div>
     </div>
   );
@@ -330,8 +297,8 @@ export function SkillDetailSheet({
   const examples = buildExamplePrompts(current);
   const changelog = buildChangelog(current);
   const reviews = buildReviews(current);
-  const totalReviews = Math.max(3, Math.floor(current.installs / 50));
-  const contributors = Math.max(1, Math.floor(current.installs / 2000) + 1);
+  const totalReviews = Math.max(3, Math.floor(current.downloads / 50));
+  const contributors = Math.max(1, Math.floor(current.downloads / 2000) + 1);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -536,7 +503,7 @@ export function SkillDetailSheet({
                   <Download className="size-3.5" />
                   {t("installHeading")}
                 </h3>
-                <InstallPanel skill={current} />
+                <DownloadPanel skill={current} />
               </section>
             </div>
           </div>

@@ -103,6 +103,11 @@
     "thirdPartySuffix": "不做背书，请自行甄别安装命令与权限。",
     "curatedBy": "精选 · 由",
     "provided": "提供",
-    "installHeading": "安装"
+    "installHeading": "安装",
+    "download": "下载 skill 包",
+    "noPackage": "暂无可下载的包",
+    "copyAgentPrompt": "复制 agent 安装提示词",
+    "agentPromptCopied": "已复制提示词",
+    "agentPromptTemplate": "从 CherryIN 安装「{name}」skill。\n下载:{url}\n解压到你的 Claude / Cherry Studio skills 目录,然后阅读 SKILL.md 并按其说明执行。"
   }
 }

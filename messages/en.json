@@ -103,6 +103,11 @@
     "thirdPartySuffix": "does not endorse it — please vet the install command and permissions yourself.",
     "curatedBy": "curated · provided by ",
     "provided": "",
-    "installHeading": "Install"
+    "installHeading": "Install",
+    "download": "Download package",
+    "noPackage": "No package available yet",
+    "copyAgentPrompt": "Copy agent install prompt",
+    "agentPromptCopied": "Prompt copied",
+    "agentPromptTemplate": "Install the \"{name}\" skill from CherryIN.\nDownload: {url}\nUnzip it into your Claude / Cherry Studio skills directory, then read SKILL.md and follow its instructions."
   }
 }
