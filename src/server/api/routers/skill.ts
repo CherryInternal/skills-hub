@@ -6,6 +6,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
+import { deleteObject } from "~/server/storage";
 
 // DB row → frontend Skill shape (LocalizedString {en, zh?}), so existing
 // components keep using pickLocale() unchanged.
@@ -151,7 +152,15 @@ export const skillRouter = createTRPCRouter({
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const row = await ctx.db.skill.findUnique({
+        where: { id: input.id },
+        select: { packageKey: true },
+      });
       await ctx.db.skill.delete({ where: { id: input.id } });
+      // db 已删,再清理 RustFS 对象;失败不阻断(对象残留可后续清理)。
+      if (row?.packageKey) {
+        await deleteObject(row.packageKey).catch(() => {});
+      }
       return { ok: true };
     }),
 });
