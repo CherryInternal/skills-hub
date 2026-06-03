@@ -416,45 +416,24 @@ export function SkillDetailSheet({
                   <ExternalLink className="size-3.5" />
                   {t("dataSource")}
                 </h3>
-                {current.source === "third_party" ? (
-                  <div className="border-amber-500/30 bg-amber-500/5 dark:border-amber-500/20 dark:bg-amber-500/10 rounded-lg border p-3">
-                    <p className="text-amber-900/90 dark:text-amber-200/90 text-xs leading-relaxed">
-                      {t("thirdPartyPrefix")} <span className="font-[Menlo,monospace]">{current.sourceFeed ?? "—"}</span>{t("thirdPartySep")}CherryIN {t("thirdPartySuffix")}
-                    </p>
-                    {current.sourceUrl && (
-                      <a
-                        href={current.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-2 inline-flex max-w-full items-center gap-1.5 truncate text-amber-900 dark:text-amber-200 text-[11px] font-medium underline-offset-2 hover:underline"
-                      >
-                        <ExternalLink className="size-3 shrink-0" />
-                        <span className="truncate font-[Menlo,monospace]">
-                          {current.sourceUrl}
-                        </span>
-                      </a>
-                    )}
-                  </div>
-                ) : (
-                  <div className="border-border bg-card rounded-lg border p-3 dark:border-white/[0.12]">
-                    <p className="text-foreground/80 text-xs leading-relaxed">
-                      CherryIN {t("curatedBy")}<span className="text-foreground font-medium">{current.author}</span> {t("provided")}
-                    </p>
-                    {current.sourceUrl && (
-                      <a
-                        href={current.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-muted-foreground hover:text-foreground mt-2 inline-flex max-w-full items-center gap-1.5 truncate text-[11px] underline-offset-2 hover:underline"
-                      >
-                        <ExternalLink className="size-3 shrink-0" />
-                        <span className="truncate font-[Menlo,monospace]">
-                          {current.sourceUrl}
-                        </span>
-                      </a>
-                    )}
-                  </div>
-                )}
+                <div className="border-border bg-card rounded-lg border p-3 dark:border-white/[0.12]">
+                  <p className="text-foreground/80 text-xs leading-relaxed">
+                    CherryIN {t("curatedBy")}<span className="text-foreground font-medium">{current.author}</span> {t("provided")}
+                  </p>
+                  {current.sourceUrl && (
+                    <a
+                      href={current.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-foreground mt-2 inline-flex max-w-full items-center gap-1.5 truncate text-[11px] underline-offset-2 hover:underline"
+                    >
+                      <ExternalLink className="size-3 shrink-0" />
+                      <span className="truncate font-[Menlo,monospace]">
+                        {current.sourceUrl}
+                      </span>
+                    </a>
+                  )}
+                </div>
               </section>
 
               {/* About */}
