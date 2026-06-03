@@ -21,20 +21,14 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  SKILL_DOMAINS,
-  pickLocale,
-  type SkillDomain,
-} from "@/components/skills/skills-data";
-import {
-  updateListing,
-  type ListingItem,
-  type SkillPatch,
-} from "@/components/skills/skills-storage";
+import { SKILL_DOMAINS, pickLocale } from "@/components/skills/skills-data";
+import { api, type RouterOutputs } from "~/trpc/react";
+
+export type AdminSkill = RouterOutputs["skill"]["adminList"][number];
 
 interface FormState {
   name: string;
-  domain: SkillDomain;
+  domain: string;
   author: string;
   version: string;
   description: string;
@@ -47,8 +41,7 @@ interface FormState {
   sourceUrl: string;
 }
 
-function toForm(item: ListingItem): FormState {
-  const s = item.skill;
+function toForm(s: AdminSkill): FormState {
   return {
     name: pickLocale(s.name, "en"),
     domain: s.domain,
@@ -65,35 +58,15 @@ function toForm(item: ListingItem): FormState {
   };
 }
 
-function toPatch(form: FormState): SkillPatch {
-  return {
-    name: form.name.trim(),
-    domain: form.domain,
-    author: form.author.trim(),
-    version: form.version.trim(),
-    description: form.description.trim(),
-    longDescription: form.longDescription.trim(),
-    tags: form.tagsCsv
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean),
-    install: form.install.trim(),
-    docsUrl: form.docsUrl.trim(),
-    homepage: form.homepage.trim() || undefined,
-    githubRepoUrl: form.githubRepoUrl.trim() || undefined,
-    sourceUrl: form.sourceUrl.trim() || undefined,
-  };
-}
-
 interface AdminSkillEditSheetProps {
-  item: ListingItem | null;
+  skill: AdminSkill | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSaved: () => void;
 }
 
 export function AdminSkillEditSheet({
-  item,
+  skill,
   open,
   onOpenChange,
   onSaved,
@@ -101,11 +74,18 @@ export function AdminSkillEditSheet({
   const t = useTranslations("admin.edit");
   const [form, setForm] = useState<FormState | null>(null);
 
-  useEffect(() => {
-    setForm(item ? toForm(item) : null);
-  }, [item]);
+  const update = api.skill.update.useMutation({
+    onSuccess: () => {
+      onSaved();
+      onOpenChange(false);
+    },
+  });
 
-  if (!item || !form) {
+  useEffect(() => {
+    setForm(skill ? toForm(skill) : null);
+  }, [skill]);
+
+  if (!skill || !form) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent className="w-full sm:max-w-xl" />
@@ -117,13 +97,25 @@ export function AdminSkillEditSheet({
     setForm((f) => (f ? { ...f, [key]: value } : f));
 
   const handleSave = () => {
-    updateListing(item, toPatch(form));
-    onSaved();
-    onOpenChange(false);
+    update.mutate({
+      id: skill.id,
+      nameEn: form.name.trim(),
+      domain: form.domain,
+      author: form.author.trim(),
+      version: form.version.trim(),
+      descriptionEn: form.description.trim(),
+      longDescEn: form.longDescription.trim(),
+      tags: form.tagsCsv
+        .split(",")
+        .map((tg) => tg.trim())
+        .filter(Boolean),
+      install: form.install.trim(),
+      docsUrl: form.docsUrl.trim(),
+      homepage: form.homepage.trim() || null,
+      githubRepoUrl: form.githubRepoUrl.trim() || null,
+      sourceUrl: form.sourceUrl.trim() || null,
+    });
   };
-
-  const sourceLabel =
-    item.source === "catalog" ? t("sourceCatalog") : t("sourceUser");
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -131,7 +123,7 @@ export function AdminSkillEditSheet({
         <SheetHeader>
           <SheetTitle>{t("title")}</SheetTitle>
           <SheetDescription>
-            {sourceLabel} · id <span className="font-[Menlo,monospace]">{item.skill.id}</span>
+            id <span className="font-[Menlo,monospace]">{skill.id}</span>
             {t("descSuffix")}
           </SheetDescription>
         </SheetHeader>
@@ -172,7 +164,7 @@ export function AdminSkillEditSheet({
               <Label>{t("labelDomain")}</Label>
               <Select
                 value={form.domain}
-                onValueChange={(v) => set("domain", v as SkillDomain)}
+                onValueChange={(v) => set("domain", v)}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />
@@ -278,9 +270,10 @@ export function AdminSkillEditSheet({
           </Button>
           <Button
             onClick={handleSave}
+            disabled={update.isPending}
             className="bg-foreground text-background hover:bg-foreground/90"
           >
-            {t("save")}
+            {update.isPending ? `${t("save")}…` : t("save")}
           </Button>
         </SheetFooter>
       </SheetContent>

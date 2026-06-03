@@ -71,7 +71,7 @@
     },
     "listings": {
       "title": "Marketplace resources",
-      "subtitle": "Manage how curated Skills appear on the user-facing /skills_marketplace — published items are visible to users, while unpublished ones stay in the admin console. Unpublished resources can be deleted directly (deletion is irreversible, so proceed with caution). Third-party resources are not managed here and are shown on the front end as \"from the community, review at your own discretion\".",
+      "subtitle": "Manage how curated skills appear on the public marketplace — published skills are visible to users, unpublished ones stay hidden in this console. Unpublished skills can be deleted directly (irreversible, so proceed with caution).",
       "sourceLabel": "Source",
       "statusLabel": "Status",
       "domainLabel": "Domain",
@@ -84,7 +84,7 @@
       "domainAll": "All domains",
       "searchPlaceholder": "Search name, author, category, tags",
       "emptyTitle": "No matching skills",
-      "emptyHint": "Adjust the filters, or approve more user submissions in the review list.",
+      "emptyHint": "Adjust the filters to find what you're looking for.",
       "colName": "Name",
       "colCategory": "Category",
       "colAuthor": "Author",
@@ -101,7 +101,9 @@
       "deleteAria": "Delete",
       "editAria": "Edit",
       "deleteConfirmPrefix": "Confirm deletion of",
-      "deleteConfirmSuffix": "? This skill will be removed from marketplace resource management and can no longer be shown on the user side."
+      "deleteConfirmSuffix": "? This skill will be removed from marketplace resource management and can no longer be shown on the user side.",
+      "logout": "Log out",
+      "loading": "Loading…"
     },
     "detail": {
       "notFoundTitle": "Submission not found",
