@@ -35,13 +35,15 @@ export interface Skill {
   description: LocalizedString;
   longDescription: LocalizedString;
   tags: string[];
-  installs: number;
+  downloads: number;
   rating: number;
-  install: string;
-  docsUrl: string;
+  docsUrl?: string;
   homepage?: string;
   githubRepoUrl?: string;
   sourceUrl?: string;
+  packageName?: string;
+  packageSize?: number;
+  hasPackage?: boolean;
   uploadedFile?: string;
   releaseDate: string;
   source?: SkillSource;
