@@ -1,6 +1,6 @@
 import { strToU8, zipSync } from "fflate";
 import { describe, expect, it } from "vitest";
-import { validateSkillZip } from "../skill-package";
+import { MAX_PACKAGE_BYTES, validateSkillZip } from "../skill-package";
 
 function makeZip(files: Record<string, string>): Buffer {
   const entries: Record<string, Uint8Array> = {};
@@ -31,5 +31,13 @@ describe("validateSkillZip", () => {
   it("rejects oversize (custom small limit)", () => {
     const zip = makeZip({ "SKILL.md": "x".repeat(100) });
     expect(validateSkillZip(zip, 10).ok).toBe(false);
+  });
+
+  it("rejects when uncompressed size exceeds limit (zip-bomb guard)", () => {
+    // Highly compressible payload: tiny compressed size, large uncompressed.
+    const zip = makeZip({ "SKILL.md": "# hi", "big.txt": "a".repeat(1000) });
+    // compressed bytes are well under default 50MB, but uncompressed > 50 bytes.
+    const res = validateSkillZip(zip, MAX_PACKAGE_BYTES, 50);
+    expect(res.ok).toBe(false);
   });
 });
