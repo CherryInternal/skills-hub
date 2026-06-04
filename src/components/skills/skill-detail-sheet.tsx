@@ -13,7 +13,7 @@ import {
   ChevronRight,
   Calendar,
   Shield,
-  BadgeCheck,
+  Star,
   ScrollText,
 } from "lucide-react";
 import {
@@ -205,14 +205,14 @@ export function SkillDetailSheet({
                 title={t("curatedBadge")}
                 className="text-muted-foreground ring-foreground/10 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset dark:ring-white/[0.10]"
               >
-                <Shield className="size-2.5" strokeWidth={2} />
+                <Star className="size-2.5" strokeWidth={2} />
                 {t("curatedBadge")}
               </span>
               <span
                 title={t("verifiedBadge")}
                 className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 ring-1 ring-emerald-500/30 ring-inset dark:text-emerald-400"
               >
-                <BadgeCheck className="size-2.5" strokeWidth={2} />
+                <Shield className="size-2.5" strokeWidth={2} />
                 {t("verifiedBadge")}
               </span>
             </div>
