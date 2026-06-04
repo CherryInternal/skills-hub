@@ -88,6 +88,11 @@
   "detail": {
     "dataSource": "Data source",
     "about": "About",
+    "breadcrumbRoot": "Skills",
+    "updated": "Updated {time}",
+    "shareLabel": "Share",
+    "shareCopied": "Link copied",
+    "curatedBadge": "Curated",
     "curatedBy": "curated · provided by ",
     "provided": "",
     "installHeading": "Install",
