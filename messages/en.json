@@ -25,8 +25,6 @@
     "syncStatus": "Last synced {when}",
     "sourceFeed": "Source: {feed}",
     "availableOn": "Available on {count} sources",
-    "bookmark": "Save",
-    "bookmarkAria": "Save to my collection",
     "timeAgoSeconds": "{seconds}s ago",
     "timeAgoMinutes": "{minutes}m ago"
   },
