@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Search, Sparkles, Bookmark, Download, Layers } from "lucide-react";
+import { Search, Sparkles, Download, Layers } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -110,23 +110,11 @@ function SkillCard({
         </div>
       </div>
 
-      <div className="border-border/60 text-muted-foreground flex items-center justify-between border-t px-5 py-2.5 text-xs dark:border-white/[0.08]">
+      <div className="border-border/60 text-muted-foreground flex items-center border-t px-5 py-2.5 text-xs dark:border-white/[0.08]">
         <span className="flex items-center gap-1">
           <Download className="size-3" />
           {formatDownloads(skill.downloads)}
         </span>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            // TODO: wire collection / favorite when storage layer ready
-          }}
-          className="hover:text-foreground flex items-center gap-1"
-          aria-label={t("bookmarkAria")}
-        >
-          <Bookmark className="size-3" />
-          {t("bookmark")}
-        </button>
       </div>
     </button>
   );

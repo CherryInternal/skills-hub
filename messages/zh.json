@@ -25,8 +25,6 @@
     "syncStatus": "最近同步：{when}",
     "sourceFeed": "来源：{feed}",
     "availableOn": "{count} 个来源收录",
-    "bookmark": "收藏",
-    "bookmarkAria": "收藏到我的合集",
     "timeAgoSeconds": "{seconds} 秒前",
     "timeAgoMinutes": "{minutes} 分钟前"
   },
