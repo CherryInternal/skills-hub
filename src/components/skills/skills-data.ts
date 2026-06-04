@@ -34,7 +34,6 @@ export interface Skill {
   longDescription: LocalizedString;
   tags: string[];
   downloads: number;
-  rating: number;
   docsUrl?: string;
   homepage?: string;
   githubRepoUrl?: string;

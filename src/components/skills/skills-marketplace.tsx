@@ -25,7 +25,7 @@ import {
 } from "./skills-data";
 import { SkillDetailSheet } from "./skill-detail-sheet";
 
-type SortOption = "popular" | "newest" | "rating" | "name_asc";
+type SortOption = "popular" | "newest" | "name_asc";
 
 function formatDownloads(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -178,9 +178,6 @@ export function SkillsMarketplace() {
             new Date(a.releaseDate).getTime(),
         );
         break;
-      case "rating":
-        list.sort((a, b) => b.rating - a.rating);
-        break;
       case "name_asc":
         list.sort((a, b) =>
           pickLocale(a.name, locale).localeCompare(pickLocale(b.name, locale)),
@@ -326,7 +323,6 @@ export function SkillsMarketplace() {
                   <SelectContent>
                     <SelectItem value="popular">{t("sortPopular")}</SelectItem>
                     <SelectItem value="newest">{t("sortNewest")}</SelectItem>
-                    <SelectItem value="rating">{t("sortRating")}</SelectItem>
                     <SelectItem value="name_asc">{t("sortName")}</SelectItem>
                   </SelectContent>
                 </Select>

@@ -62,7 +62,6 @@ async function main() {
         packageSize: zip.byteLength,
         packageUploadedAt: new Date(),
         downloads: 0,
-        rating: s.rating,
         releaseDate: new Date(s.releaseDate),
         published: true,
       },
