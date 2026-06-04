@@ -32,7 +32,7 @@ export async function POST(req: Request) {
   const formData = await req.formData();
   const file = formData.get("package");
   if (!(file instanceof File)) {
-    return NextResponse.json({ error: "Missing package file." }, { status: 400 });
+    return NextResponse.json({ error: "缺少 zip 包文件。" }, { status: 400 });
   }
   const buf = Buffer.from(await file.arrayBuffer());
   const valid = validateSkillZip(buf);
@@ -45,7 +45,10 @@ export async function POST(req: Request) {
   );
   const parsed = metaSchema.safeParse(fields);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid metadata." }, { status: 400 });
+    return NextResponse.json(
+      { error: "元数据校验失败,请检查必填项(如名称、版本)。" },
+      { status: 400 },
+    );
   }
   const m = parsed.data;
   const key = `skills/${m.id}.zip`;
@@ -88,12 +91,12 @@ export async function POST(req: Request) {
       e.code === "P2002"
     ) {
       return NextResponse.json(
-        { error: "A skill with this id already exists." },
+        { error: "已存在相同 id 的 skill,请换一个 id。" },
         { status: 409 },
       );
     }
     return NextResponse.json(
-      { error: "Failed to create skill." },
+      { error: "创建 skill 失败。" },
       { status: 500 },
     );
   }
@@ -106,7 +109,7 @@ export async function POST(req: Request) {
     // leave a skill whose packageKey points at a missing object.
     await db.skill.delete({ where: { id: created.id } }).catch(() => {});
     return NextResponse.json(
-      { error: "Failed to store package." },
+      { error: "保存压缩包到存储失败。" },
       { status: 500 },
     );
   }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -133,6 +134,8 @@ export function AdminSkillEditSheet({
   const [form, setForm] = useState<FormState | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  // Inline submit/validation error shown above the footer (replaces alert()).
+  const [error, setError] = useState<string | null>(null);
   // The language tab currently being edited in the localized section.
   const [lang, setLang] = useState<LocaleCode>("en");
   // Tracks whether the user manually edited the id; once true, the id stops
@@ -147,6 +150,7 @@ export function AdminSkillEditSheet({
     setFile(null);
     setIdTouched(false);
     setLang("en");
+    setError(null);
   }, [skill]);
 
   if (!form) {
@@ -196,20 +200,21 @@ export function AdminSkillEditSheet({
   };
 
   const handleSave = async () => {
+    setError(null);
     // English is the primary, required language (matches the backend + the
     // public-site fallback). Block save and jump to the English tab if missing.
     if (!form.locales.en.name.trim()) {
       setLang("en");
-      alert("英文名称为必填(主语言,前台缺其他语言时回退到它)");
+      setError("英文名称为必填(主语言,前台缺其他语言时回退到它)");
+      return;
+    }
+    if (isCreate && !file) {
+      setError("新建 skill 必须上传 zip 包");
       return;
     }
     setBusy(true);
     try {
       if (isCreate) {
-        if (!file) {
-          alert("新建 skill 必须上传 zip 包");
-          return;
-        }
         const res = await fetch("/api/admin/skills", {
           method: "POST",
           body: buildFormData(),
@@ -256,7 +261,7 @@ export function AdminSkillEditSheet({
       onSaved();
       onOpenChange(false);
     } catch (e) {
-      alert(e instanceof Error ? e.message : "保存失败");
+      setError(e instanceof Error ? e.message : "保存失败");
     } finally {
       setBusy(false);
     }
@@ -457,6 +462,16 @@ export function AdminSkillEditSheet({
             </div>
           </section>
         </div>
+
+        {error && (
+          <div
+            role="alert"
+            className="border-destructive/30 bg-destructive/10 text-destructive mx-4 flex items-start gap-2 rounded-md border px-3 py-2 text-sm"
+          >
+            <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+            <span className="min-w-0 break-words">{error}</span>
+          </div>
+        )}
 
         <SheetFooter className="flex-row justify-end gap-2">
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
