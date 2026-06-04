@@ -215,6 +215,7 @@ export function AdminSkillEditSheet({
     // Errors render inline under each field rather than as a toast/banner.
     const errs: Record<string, string> = {};
     if (!form.locales.en.name.trim()) errs.name = "英文名称为必填(主语言)";
+    if (isCreate && !form.id.trim()) errs.id = "id 必填(通常从英文名自动生成)";
     if (!form.author.trim()) errs.author = "作者必填";
     if (!form.version.trim()) errs.version = "版本号必填";
     if (isCreate && !file) errs.package = "新建 skill 必须上传 zip 包";
@@ -334,7 +335,10 @@ export function AdminSkillEditSheet({
             </div>
             {isCreate && (
               <div className="space-y-1.5">
-                <Label htmlFor="edit-id">id</Label>
+                <Label htmlFor="edit-id">
+                  id
+                  <span className="text-destructive ml-0.5">*</span>
+                </Label>
                 <Input
                   id="edit-id"
                   value={form.id}
