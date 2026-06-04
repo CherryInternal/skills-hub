@@ -53,6 +53,15 @@ function pickZh(value: LocalizedString | undefined): string {
   return "";
 }
 
+// Generates a kebab-case slug from an arbitrary (English) name.
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 const EMPTY_FORM: FormState = {
   id: "",
   name: "",
@@ -104,6 +113,9 @@ export function AdminSkillEditSheet({
   const [form, setForm] = useState<FormState | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  // Tracks whether the user manually edited the id; once true, the id stops
+  // auto-following the (English) name.
+  const [idTouched, setIdTouched] = useState(false);
   const isCreate = skill === null;
 
   const update = api.skill.update.useMutation();
@@ -111,6 +123,7 @@ export function AdminSkillEditSheet({
   useEffect(() => {
     setForm(skill ? toForm(skill) : { ...EMPTY_FORM });
     setFile(null);
+    setIdTouched(false);
   }, [skill]);
 
   if (!form) {
@@ -123,6 +136,13 @@ export function AdminSkillEditSheet({
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => (f ? { ...f, [key]: value } : f));
+
+  // Updates the English name and, while creating a new skill and the user
+  // hasn't manually touched the id, keeps the id in sync as a slug.
+  const onNameChange = (value: string) => {
+    set("name", value);
+    if (isCreate && !idTouched) set("id", slugify(value));
+  };
 
   const buildFormData = (): FormData => {
     const fd = new FormData();
@@ -237,26 +257,29 @@ export function AdminSkillEditSheet({
                 onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               />
             </div>
-            {isCreate && (
-              <div className="space-y-1.5">
-                <Label htmlFor="edit-id">id(kebab-case slug)</Label>
-                <Input
-                  id="edit-id"
-                  value={form.id}
-                  onChange={(e) => set("id", e.target.value)}
-                  placeholder="my-skill"
-                  className="font-[Menlo,monospace] text-xs"
-                />
-              </div>
-            )}
             <div className="space-y-1.5">
               <Label htmlFor="edit-name">{t("labelName")} / Name (EN)</Label>
               <Input
                 id="edit-name"
                 value={form.name}
-                onChange={(e) => set("name", e.target.value)}
+                onChange={(e) => onNameChange(e.target.value)}
               />
             </div>
+            {isCreate && (
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-id">id(自动从名称生成,可改)</Label>
+                <Input
+                  id="edit-id"
+                  value={form.id}
+                  onChange={(e) => {
+                    set("id", e.target.value);
+                    setIdTouched(true);
+                  }}
+                  placeholder="my-skill"
+                  className="font-[Menlo,monospace] text-xs"
+                />
+              </div>
+            )}
             <div className="space-y-1.5">
               <Label htmlFor="edit-name-zh">名称(中文)</Label>
               <Input
