@@ -24,8 +24,6 @@ model Skill {
   author        String
   version       String
   tags          String[]
-  docsUrl       String?
-  homepage      String?
   githubRepoUrl String?
   sourceUrl     String?
   packageKey        String?

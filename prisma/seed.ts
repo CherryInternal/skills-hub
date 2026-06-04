@@ -53,8 +53,6 @@ async function main() {
         author: s.author,
         version: s.version,
         tags: s.tags,
-        docsUrl: s.docsUrl ?? null,
-        homepage: s.homepage ?? null,
         githubRepoUrl: s.githubRepoUrl ?? null,
         sourceUrl: s.sourceUrl ?? null,
         packageKey: key,

@@ -19,7 +19,6 @@ export const SKILLS: Skill[] = [
     },
     tags: ["git", "review", "changelog"],
     downloads: 0,
-    docsUrl: "https://example.com/skills/pr-summary",
     releaseDate: "2026-05-01",
   },
   {
@@ -38,7 +37,6 @@ export const SKILLS: Skill[] = [
     },
     tags: ["git", "commits"],
     downloads: 0,
-    docsUrl: "https://example.com/skills/commit-helper",
     releaseDate: "2026-05-10",
   },
   {
@@ -57,7 +55,6 @@ export const SKILLS: Skill[] = [
     },
     tags: ["meetings", "notes"],
     downloads: 0,
-    docsUrl: "https://example.com/skills/meeting-notes",
     releaseDate: "2026-04-20",
   },
   {
@@ -76,7 +73,6 @@ export const SKILLS: Skill[] = [
     },
     tags: ["design", "color", "a11y"],
     downloads: 0,
-    docsUrl: "https://example.com/skills/palette-gen",
     releaseDate: "2026-05-18",
   },
   {
@@ -95,7 +91,6 @@ export const SKILLS: Skill[] = [
     },
     tags: ["data", "csv", "analysis"],
     downloads: 0,
-    docsUrl: "https://example.com/skills/csv-insights",
     releaseDate: "2026-05-22",
   },
 ];
