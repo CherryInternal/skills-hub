@@ -203,7 +203,7 @@ export function SkillDetailSheet({
             <div className="flex flex-wrap gap-1.5 pt-1">
               <span
                 title={t("curatedBadge")}
-                className="text-muted-foreground ring-foreground/10 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset dark:ring-white/[0.10]"
+                className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-600 ring-1 ring-amber-500/30 ring-inset dark:text-amber-400"
               >
                 <Star className="size-2.5" strokeWidth={2} />
                 {t("curatedBadge")}
