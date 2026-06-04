@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { toast } from "sonner";
 import { pickLocale } from "@/components/skills/skills-data";
 import { api } from "~/trpc/react";
 import { logout } from "~/app/admin/actions";
@@ -107,7 +108,13 @@ export function AdminSkillsListings() {
   }, [items, status, domain, search]);
 
   const handleToggle = (item: AdminSkill, next: boolean) => {
-    setPublished.mutate({ id: item.id, published: next });
+    setPublished.mutate(
+      { id: item.id, published: next },
+      {
+        onSuccess: () => toast.success(next ? "已上架到市场" : "已从市场下架"),
+        onError: () => toast.error("操作失败,请重试"),
+      },
+    );
   };
 
   const handleDelete = (item: AdminSkill) => {
@@ -119,7 +126,13 @@ export function AdminSkillsListings() {
     ) {
       return;
     }
-    deleteSkill.mutate({ id: item.id });
+    deleteSkill.mutate(
+      { id: item.id },
+      {
+        onSuccess: () => toast.success(`已删除「${name}」`),
+        onError: () => toast.error("删除失败,请重试"),
+      },
+    );
   };
 
   return (

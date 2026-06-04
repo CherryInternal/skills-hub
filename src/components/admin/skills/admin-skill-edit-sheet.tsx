@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { TriangleAlert } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -260,6 +261,7 @@ export function AdminSkillEditSheet({
       setFile(null);
       onSaved();
       onOpenChange(false);
+      toast.success(isCreate ? "已创建 skill" : "已保存修改");
     } catch (e) {
       setError(e instanceof Error ? e.message : "保存失败");
     } finally {
