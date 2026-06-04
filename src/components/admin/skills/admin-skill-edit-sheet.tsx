@@ -315,7 +315,8 @@ export function AdminSkillEditSheet({
             </h3>
             <div className="space-y-1.5">
               <Label htmlFor="edit-pkg">
-                {isCreate ? "Skill 包(zip,必填)" : "替换包(zip,可选)"}
+                {isCreate ? "Skill 包(zip)" : "替换包(zip,可选)"}
+                {isCreate && <span className="text-destructive ml-0.5">*</span>}
               </Label>
               <Input
                 id="edit-pkg"
@@ -371,7 +372,10 @@ export function AdminSkillEditSheet({
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="edit-author">{t("labelAuthor")}</Label>
+                <Label htmlFor="edit-author">
+                  {t("labelAuthor")}
+                  <span className="text-destructive ml-0.5">*</span>
+                </Label>
                 <Input
                   id="edit-author"
                   value={form.author}
@@ -386,7 +390,10 @@ export function AdminSkillEditSheet({
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-version">{t("labelVersion")}</Label>
+                <Label htmlFor="edit-version">
+                  {t("labelVersion")}
+                  <span className="text-destructive ml-0.5">*</span>
+                </Label>
                 <Input
                   id="edit-version"
                   value={form.version}
