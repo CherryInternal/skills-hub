@@ -97,7 +97,11 @@ export const skillRouter = createTRPCRouter({
   getById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const row = await ctx.db.skill.findUnique({ where: { id: input.id } });
+      // Public endpoint: only expose published skills so drafts can't be
+      // fetched by guessing/knowing an id.
+      const row = await ctx.db.skill.findFirst({
+        where: { id: input.id, published: true },
+      });
       return row ? toSkill(row) : null;
     }),
 

@@ -13,7 +13,7 @@ datasource db {
 
 // Curated skill catalog (first-pass backend; submissions/AI-review come later).
 model Skill {
-  id            String   @id // kebab-case slug, also the public URL id
+  id            String   @id @default(uuid()) // surrogate key (server-generated, never user-facing); also the public URL id + package filename
   nameEn        String
   nameZh        String?
   descriptionEn String

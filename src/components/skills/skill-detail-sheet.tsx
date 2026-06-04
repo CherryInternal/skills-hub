@@ -137,7 +137,7 @@ export function SkillDetailSheet({
               <ChevronRight className="size-3" />
               <span>{current.domain}</span>
               <ChevronRight className="size-3" />
-              <span className="font-[Menlo,monospace]">{current.id}</span>
+              <span>{pickLocale(current.name, locale)}</span>
             </div>
 
             <div className="flex items-start justify-between gap-3">

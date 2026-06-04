@@ -1,10 +1,23 @@
-import type { Skill } from "../src/components/skills/skills-data";
+import type { LocalizedString } from "../src/components/skills/skills-data";
 
-// 5 条内容托管样板(中英双语)。id 对应 prisma/demo-packages/<id>/ 目录。
+// 5 条内容托管样板(中英双语)。`slug` 对应 prisma/demo-packages/<slug>/ 目录,
+// 仅用于定位 demo 包源;DB 主键(id)由 seed 生成 uuid,不再用 slug 当主键。
 // 仅供 `pnpm exec tsx prisma/seed.ts` 灌入,生产可不跑。
-export const SKILLS: Skill[] = [
+export interface DemoSkill {
+  slug: string;
+  name: LocalizedString;
+  domain: string;
+  author: string;
+  version: string;
+  description: LocalizedString;
+  longDescription: LocalizedString;
+  tags: string[];
+  releaseDate: string;
+}
+
+export const SKILLS: DemoSkill[] = [
   {
-    id: "pr-summary",
+    slug: "pr-summary",
     name: { en: "PR Summary", zh: "PR 摘要" },
     domain: "Developer Tools",
     author: "CherryIN",
@@ -18,11 +31,10 @@ export const SKILLS: Skill[] = [
       zh: "读取 PR 的 diff,产出精炼总结:改了什么、为什么、有哪些风险点 —— 可直接粘进发布说明。",
     },
     tags: ["git", "review", "changelog"],
-    downloads: 0,
     releaseDate: "2026-05-01",
   },
   {
-    id: "commit-helper",
+    slug: "commit-helper",
     name: { en: "Commit Helper", zh: "Commit 助手" },
     domain: "Developer Tools",
     author: "CherryIN",
@@ -36,11 +48,10 @@ export const SKILLS: Skill[] = [
       zh: "检查暂存的改动,提议清晰的 `type(scope): subject` 提交信息,可附带正文。",
     },
     tags: ["git", "commits"],
-    downloads: 0,
     releaseDate: "2026-05-10",
   },
   {
-    id: "meeting-notes",
+    slug: "meeting-notes",
     name: { en: "Meeting Notes", zh: "会议纪要" },
     domain: "Communication",
     author: "CherryIN",
@@ -54,11 +65,10 @@ export const SKILLS: Skill[] = [
       zh: "把原始会议记录转成结构化纪要,按决策、待办(含负责人)、待解决问题分组。",
     },
     tags: ["meetings", "notes"],
-    downloads: 0,
     releaseDate: "2026-04-20",
   },
   {
-    id: "palette-gen",
+    slug: "palette-gen",
     name: { en: "Palette Generator", zh: "配色生成器" },
     domain: "Design",
     author: "CherryIN",
@@ -72,11 +82,10 @@ export const SKILLS: Skill[] = [
       zh: "从一个十六进制颜色出发,生成带 WCAG 对比度标注的明暗色阶,适合做无障碍 UI。",
     },
     tags: ["design", "color", "a11y"],
-    downloads: 0,
     releaseDate: "2026-05-18",
   },
   {
-    id: "csv-insights",
+    slug: "csv-insights",
     name: { en: "CSV Insights", zh: "CSV 洞察" },
     domain: "Data & Analytics",
     author: "CherryIN",
@@ -90,7 +99,6 @@ export const SKILLS: Skill[] = [
       zh: "指向一个 CSV,报告它的字段结构、标记异常,并给出最有价值的三条洞察。",
     },
     tags: ["data", "csv", "analysis"],
-    downloads: 0,
     releaseDate: "2026-05-22",
   },
 ];

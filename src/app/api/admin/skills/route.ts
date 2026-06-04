@@ -1,14 +1,14 @@
+import { randomUUID } from "node:crypto";
+
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { Prisma } from "../../../../../generated/prisma";
 import { isAdminRequest } from "~/server/auth";
 import { db } from "~/server/db";
 import { validateSkillZip } from "~/server/skill-package";
 import { ensureBucket, putObject } from "~/server/storage";
 
 const metaSchema = z.object({
-  id: z.string().min(1),
   nameEn: z.string().min(1),
   nameZh: z.string().optional(),
   descriptionEn: z.string(),
@@ -51,18 +51,19 @@ export async function POST(req: Request) {
     );
   }
   const m = parsed.data;
-  const key = `skills/${m.id}.zip`;
+  // Surrogate id: generated server-side, never user-supplied. Doubles as the
+  // package filename and the public URL id.
+  const id = randomUUID();
+  const key = `skills/${id}.zip`;
 
-  // DB-first ordering: create the row before touching storage. A duplicate id
-  // fails here on the unique constraint *before* any object write, so an
-  // existing skill's package can never be overwritten (or destructively
-  // deleted by a compensation path). Storage is written only after the row is
-  // safely reserved.
+  // Create the row before touching storage, then roll back the row if the
+  // object write fails — so we never leave a skill whose packageKey points at
+  // a missing object.
   let created;
   try {
     created = await db.skill.create({
       data: {
-        id: m.id,
+        id,
         nameEn: m.nameEn,
         nameZh: m.nameZh || null,
         descriptionEn: m.descriptionEn,
@@ -83,18 +84,7 @@ export async function POST(req: Request) {
         published: true,
       },
     });
-  } catch (e) {
-    // Only a unique-constraint violation is a real id conflict (409). Any other
-    // DB error is a genuine server failure (500), not a mislabeled conflict.
-    if (
-      e instanceof Prisma.PrismaClientKnownRequestError &&
-      e.code === "P2002"
-    ) {
-      return NextResponse.json(
-        { error: "已存在相同 id 的 skill,请换一个 id。" },
-        { status: 409 },
-      );
-    }
+  } catch {
     return NextResponse.json(
       { error: "创建 skill 失败。" },
       { status: 500 },
