@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,7 +48,6 @@ interface LocaleContent {
 }
 
 interface FormState {
-  id: string;
   domain: string;
   author: string;
   version: string;
@@ -84,17 +83,7 @@ function readLocale(s: AdminSkill, code: LocaleCode): LocaleContent {
 
 const EMPTY_LOCALE: LocaleContent = { name: "", description: "", longDescription: "" };
 
-// Generates a kebab-case slug from an arbitrary (English) name.
-function slugify(s: string): string {
-  return s
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 const EMPTY_FORM: FormState = {
-  id: "",
   domain: SKILL_DOMAINS[0],
   author: "",
   version: "0.1.0",
@@ -106,7 +95,6 @@ const EMPTY_FORM: FormState = {
 
 function toForm(s: AdminSkill): FormState {
   return {
-    id: s.id,
     domain: s.domain,
     author: s.author,
     version: s.version,
@@ -131,6 +119,7 @@ export function AdminSkillEditSheet({
   onSaved,
 }: AdminSkillEditSheetProps) {
   const t = useTranslations("admin.edit");
+  const locale = useLocale();
   const [form, setForm] = useState<FormState | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
@@ -138,9 +127,6 @@ export function AdminSkillEditSheet({
   const [errors, setErrors] = useState<Record<string, string>>({});
   // The language tab currently being edited in the localized section.
   const [lang, setLang] = useState<LocaleCode>("en");
-  // Tracks whether the user manually edited the id; once true, the id stops
-  // auto-following the (English) name.
-  const [idTouched, setIdTouched] = useState(false);
   const isCreate = skill === null;
 
   const update = api.skill.update.useMutation();
@@ -148,7 +134,6 @@ export function AdminSkillEditSheet({
   useEffect(() => {
     setForm(skill ? toForm(skill) : { ...EMPTY_FORM, locales: { en: { ...EMPTY_LOCALE }, zh: { ...EMPTY_LOCALE } } });
     setFile(null);
-    setIdTouched(false);
     setLang("en");
     setErrors({});
   }, [skill]);
@@ -181,18 +166,14 @@ export function AdminSkillEditSheet({
         : f,
     );
 
-  // Editing the English name also seeds the id slug (while creating and the
-  // user hasn't taken over the id manually).
   const onNameChange = (code: LocaleCode, value: string) => {
     setLoc(code, "name", value);
     if (code === "en") clearErr("name");
-    if (code === "en" && isCreate && !idTouched) set("id", slugify(value));
   };
 
   const buildFormData = (): FormData => {
     const fd = new FormData();
     if (file) fd.set("package", file);
-    fd.set("id", skill?.id ?? form.id);
     fd.set("nameEn", form.locales.en.name.trim());
     fd.set("nameZh", form.locales.zh.name.trim());
     fd.set("descriptionEn", form.locales.en.description.trim());
@@ -215,7 +196,6 @@ export function AdminSkillEditSheet({
     // Errors render inline under each field rather than as a toast/banner.
     const errs: Record<string, string> = {};
     if (!form.locales.en.name.trim()) errs.name = "英文名称为必填(主语言)";
-    if (isCreate && !form.id.trim()) errs.id = "id 必填(通常从英文名自动生成)";
     if (!form.author.trim()) errs.author = "作者必填";
     if (!form.version.trim()) errs.version = "版本号必填";
     if (isCreate && !file) errs.package = "新建 skill 必须上传 zip 包";
@@ -235,8 +215,7 @@ export function AdminSkillEditSheet({
         if (!res.ok) {
           const msg =
             ((await res.json()) as { error?: string }).error ?? "上传失败";
-          // 409 = id 冲突 → id 字段;其余多为包/校验问题 → zip 字段
-          setErrors(res.status === 409 ? { id: msg } : { package: msg });
+          setErrors({ package: msg });
           return;
         }
       } else {
@@ -298,8 +277,7 @@ export function AdminSkillEditSheet({
               "上传 skill 包(zip)并填写元数据"
             ) : (
               <>
-                id <span className="font-[Menlo,monospace]">{skill.id}</span>
-                {t("descSuffix")}
+                正在编辑「{pickLocale(skill.name, locale)}」{t("descSuffix")}
               </>
             )}
           </SheetDescription>
@@ -333,29 +311,6 @@ export function AdminSkillEditSheet({
                 <p className="text-destructive text-xs">{errors.package}</p>
               )}
             </div>
-            {isCreate && (
-              <div className="space-y-1.5">
-                <Label htmlFor="edit-id">
-                  id
-                  <span className="text-destructive ml-0.5">*</span>
-                </Label>
-                <Input
-                  id="edit-id"
-                  value={form.id}
-                  aria-invalid={!!errors.id || undefined}
-                  onChange={(e) => {
-                    set("id", e.target.value);
-                    setIdTouched(true);
-                    clearErr("id");
-                  }}
-                  placeholder="my-skill"
-                  className="font-[Menlo,monospace] text-xs"
-                />
-                {errors.id && (
-                  <p className="text-destructive text-xs">{errors.id}</p>
-                )}
-              </div>
-            )}
             <div className="space-y-1.5">
               <Label>{t("labelDomain")}</Label>
               <Select

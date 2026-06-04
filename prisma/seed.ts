@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,8 +14,8 @@ const db = new PrismaClient();
 // ESM 下没有 __dirname,从 import.meta.url 推导。
 const seedDir = dirname(fileURLToPath(import.meta.url));
 
-function packDemo(id: string): Buffer {
-  const dir = join(seedDir, "demo-packages", id);
+function packDemo(slug: string): Buffer {
+  const dir = join(seedDir, "demo-packages", slug);
   const entries: Record<string, Uint8Array> = {};
   for (const name of readdirSync(dir)) {
     entries[name] = new Uint8Array(readFileSync(join(dir, name)));
@@ -29,20 +30,22 @@ function loc(v: string | { en: string; zh?: string }): { en: string; zh: string 
 
 async function main() {
   await ensureBucket();
+  // Demo 重建:清空后重新灌入(seed 仅用于开发样板数据,生产不跑)。
+  await db.skill.deleteMany({});
   let n = 0;
   for (const s of SKILLS) {
     const name = loc(s.name);
     const desc = loc(s.description);
     const long = loc(s.longDescription);
-    const zip = packDemo(s.id);
-    const key = `skills/${s.id}.zip`;
+    const zip = packDemo(s.slug);
+    // Surrogate uuid primary key; the package object is keyed by it too.
+    const id = randomUUID();
+    const key = `skills/${id}.zip`;
     await putObject(key, zip);
 
-    await db.skill.upsert({
-      where: { id: s.id },
-      update: {},
-      create: {
-        id: s.id,
+    await db.skill.create({
+      data: {
+        id,
         nameEn: name.en,
         nameZh: name.zh,
         descriptionEn: desc.en,
@@ -53,10 +56,10 @@ async function main() {
         author: s.author,
         version: s.version,
         tags: s.tags,
-        githubRepoUrl: s.githubRepoUrl ?? null,
-        sourceUrl: s.sourceUrl ?? null,
+        githubRepoUrl: null,
+        sourceUrl: null,
         packageKey: key,
-        packageName: `${s.id}.zip`,
+        packageName: `${s.slug}.zip`,
         packageSize: zip.byteLength,
         packageUploadedAt: new Date(),
         downloads: 0,
