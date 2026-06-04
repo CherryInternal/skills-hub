@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
   Sparkles,
@@ -11,19 +11,10 @@ import {
   GitBranch,
   Share2,
   Flag,
-  Bot,
-  User,
   ChevronRight,
   Calendar,
   Shield,
-  Zap,
-  WifiOff,
-  Network,
   ScrollText,
-  GitCommit,
-  MessageSquareQuote,
-  Hash,
-  AlertTriangle,
 } from "lucide-react";
 import {
   Sheet,
@@ -31,8 +22,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
 import { pickLocale, type Skill } from "./skills-data";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -42,22 +31,7 @@ interface SkillDetailSheetProps {
   onOpenChange: (open: boolean) => void;
 }
 
-type Platform = "claude-code" | "codex" | "cursor" | "vscode" | "cline";
-const PLATFORMS: Array<{ key: Platform; label: string }> = [
-  { key: "claude-code", label: "Claude Code" },
-  { key: "codex", label: "Codex" },
-  { key: "cursor", label: "Cursor" },
-  { key: "vscode", label: "VSCode" },
-  { key: "cline", label: "Cline" },
-];
-
 // ─── helpers ──────────────────────────────────────────────────
-
-function formatInstalls(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return String(n);
-}
 
 function relativeTime(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -68,116 +42,6 @@ function relativeTime(iso: string): string {
   const months = Math.floor(days / 30);
   if (months < 12) return `${months}mo ago`;
   return `${Math.floor(months / 12)}y ago`;
-}
-
-function authorInitials(name: string): string {
-  return name
-    .split(/[\s._-]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((s) => s[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
-// Derive a capability matrix from skill metadata
-function deriveCapabilities(skill: Skill) {
-  const text = `${pickLocale(skill.name, "en")} ${pickLocale(skill.description, "en")} ${pickLocale(skill.longDescription, "en")} ${skill.tags.join(" ")}`.toLowerCase();
-  return [
-    {
-      key: "verified",
-      label: "Curated",
-      Icon: Shield,
-      on: true,
-    },
-    {
-      key: "streaming",
-      label: "Streaming",
-      Icon: Zap,
-      on:
-        /stream|live|real-?time/.test(text) ||
-        skill.domain === "AI & Agents",
-    },
-    {
-      key: "mcp",
-      label: "MCP-ready",
-      Icon: Network,
-      on: /mcp|model context protocol/.test(text),
-    },
-    {
-      key: "offline",
-      label: "Works offline",
-      Icon: WifiOff,
-      on: /offline|local|no.?network/.test(text),
-    },
-    {
-      key: "open-source",
-      label: "Open source",
-      Icon: GitBranch,
-      on: Boolean(skill.githubRepoUrl),
-    },
-  ];
-}
-
-function deriveCompatibility(skill: Skill) {
-  // Mock per-platform compatibility based on domain/tags
-  const baseSupport: Record<Platform, boolean> = {
-    "claude-code": true,
-    codex: /agent|prompt|skill/.test(skill.tags.join(" ").toLowerCase()),
-    cursor: skill.domain === "Developer Tools" || skill.domain === "Design",
-    vscode: skill.domain === "Developer Tools",
-    cline: skill.domain === "AI & Agents" || skill.domain === "Automation",
-  };
-  return PLATFORMS.map((p) => ({ ...p, supported: baseSupport[p.key] }));
-}
-
-function buildExamplePrompts(skill: Skill): string[] {
-  const name = pickLocale(skill.name, "en");
-  const desc = pickLocale(skill.description, "en");
-  return [
-    `Use the ${name} skill on the current repo.`,
-    `Apply ${name} to my latest PR and explain what changed.`,
-    `Run ${name} against this CSV and show me the top three insights.`,
-  ];
-}
-
-function buildChangelog(skill: Skill) {
-  const [major, minor, patch] = skill.version
-    .split(".")
-    .map((n) => parseInt(n, 10) || 0);
-  const month = 30 * 24 * 60 * 60 * 1000;
-  const base = new Date(skill.releaseDate).getTime();
-  return [
-    {
-      version: skill.version,
-      at: new Date(base).toISOString(),
-      note: "Polishing pass on the system prompt and improved error messages.",
-    },
-    {
-      version: `${major}.${Math.max(0, minor - 1)}.${patch ?? 0}`,
-      at: new Date(base - month).toISOString(),
-      note: "Added platform support for VSCode + Cursor, faster cold start.",
-    },
-    {
-      version: `${major}.${Math.max(0, minor - 2)}.0`,
-      at: new Date(base - 2 * month).toISOString(),
-      note: "Initial release.",
-    },
-  ];
-}
-
-function buildReviews(skill: Skill) {
-  const reviewers = [
-    { name: "@rosa.k", title: "Frontend lead, Forgica" },
-    { name: "@kenji.t", title: "Indie hacker" },
-    { name: "@vlad.r", title: "Platform engineer" },
-  ];
-  const quotes = [
-    `Stopped me from shipping three subtle bugs. The fact that it explains *why* is what won me over.`,
-    `Replaced two custom scripts I had been maintaining. Setup took less than a minute on Claude Code.`,
-    `Excellent on the happy path; needs more guardrails on edge cases. Author is responsive on GitHub though.`,
-  ];
-  const stars = [5, 5, 4];
-  return reviewers.map((r, i) => ({ ...r, quote: quotes[i]!, stars: stars[i]! }));
 }
 
 // ─── download panel ──────────────────────────────────────────
@@ -256,11 +120,6 @@ export function SkillDetailSheet({
   if (!current) return null;
 
   const Icon = Sparkles;
-  const caps = deriveCapabilities(current);
-  const compatibility = deriveCompatibility(current);
-  const examples = buildExamplePrompts(current);
-  const changelog = buildChangelog(current);
-  const reviews = buildReviews(current);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -344,20 +203,15 @@ export function SkillDetailSheet({
               </div>
             </div>
 
-            {/* Capability strip — only show enabled */}
+            {/* Capability strip */}
             <div className="flex flex-wrap gap-1.5 pt-1">
-              {caps
-                .filter((c) => c.on)
-                .map(({ key, label, Icon: CapIcon }) => (
-                  <span
-                    key={key}
-                    title={label}
-                    className="text-muted-foreground ring-foreground/10 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset dark:ring-white/[0.10]"
-                  >
-                    <CapIcon className="size-2.5" strokeWidth={2} />
-                    {label}
-                  </span>
-                ))}
+              <span
+                title="Curated"
+                className="text-muted-foreground ring-foreground/10 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset dark:ring-white/[0.10]"
+              >
+                <Shield className="size-2.5" strokeWidth={2} />
+                Curated
+              </span>
             </div>
           </SheetHeader>
 
@@ -399,35 +253,6 @@ export function SkillDetailSheet({
                 <p className="text-foreground text-sm leading-relaxed">
                   {pickLocale(current.longDescription, locale)}
                 </p>
-              </section>
-
-              {/* Example prompts */}
-              <section className="space-y-2">
-                <h3 className="text-foreground inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
-                  <MessageSquareQuote className="size-3.5" />
-                  Example prompts
-                </h3>
-                <ul className="space-y-1.5">
-                  {examples.map((e, i) => (
-                    <li
-                      key={i}
-                      className="border-border bg-card group flex items-start gap-2 rounded-lg border p-2.5 text-sm dark:border-white/[0.12]"
-                    >
-                      <span className="bg-muted text-muted-foreground mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md font-[Menlo,monospace] text-[10px] tabular-nums">
-                        {i + 1}
-                      </span>
-                      <span className="text-foreground/90 flex-1">{e}</span>
-                      <button
-                        type="button"
-                        onClick={() => void navigator.clipboard.writeText(e)}
-                        className="text-muted-foreground/50 hover:text-foreground opacity-0 transition-opacity group-hover:opacity-100"
-                        aria-label="Copy example"
-                      >
-                        <Copy className="size-3.5" />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
               </section>
 
               {/* Install */}
