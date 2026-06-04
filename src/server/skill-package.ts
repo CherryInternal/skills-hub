@@ -15,26 +15,35 @@ export function validateSkillZip(
   maxUncompressedBytes = MAX_UNCOMPRESSED_BYTES,
 ): ValidationResult {
   if (buf.byteLength > maxBytes) {
-    return { ok: false, error: "Package exceeds size limit." };
+    return {
+      ok: false,
+      error: `压缩包体积超出上限(最大 ${Math.round(maxBytes / 1024 / 1024)} MB)。`,
+    };
   }
   let files: Record<string, Uint8Array>;
   try {
     files = unzipSync(new Uint8Array(buf));
   } catch {
-    return { ok: false, error: "Not a valid zip archive." };
+    return { ok: false, error: "这不是有效的 zip 压缩包。" };
   }
   let uncompressed = 0;
   for (const entry of Object.values(files)) {
     uncompressed += entry.byteLength;
     if (uncompressed > maxUncompressedBytes) {
-      return { ok: false, error: "Uncompressed package exceeds size limit." };
+      return {
+        ok: false,
+        error: `解压后体积超出上限(最大 ${Math.round(maxUncompressedBytes / 1024 / 1024)} MB)。`,
+      };
     }
   }
   const hasSkillMd = Object.keys(files).some(
     (name) => name === "SKILL.md" || /^[^/]+\/SKILL\.md$/.test(name),
   );
   if (!hasSkillMd) {
-    return { ok: false, error: "Missing SKILL.md in package root." };
+    return {
+      ok: false,
+      error: "压缩包里找不到 SKILL.md(需放在根目录,或单个顶层文件夹内)。",
+    };
   }
   return { ok: true };
 }

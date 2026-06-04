@@ -15,13 +15,13 @@ export async function POST(
   const { id } = await params;
   const existing = await db.skill.findUnique({ where: { id } });
   if (!existing) {
-    return NextResponse.json({ error: "Skill not found." }, { status: 404 });
+    return NextResponse.json({ error: "找不到该 skill。" }, { status: 404 });
   }
 
   const formData = await req.formData();
   const file = formData.get("package");
   if (!(file instanceof File)) {
-    return NextResponse.json({ error: "Missing package file." }, { status: 400 });
+    return NextResponse.json({ error: "缺少 zip 包文件。" }, { status: 400 });
   }
   const buf = Buffer.from(await file.arrayBuffer());
   const valid = validateSkillZip(buf);
@@ -43,7 +43,7 @@ export async function POST(
     await putObject(key, buf); // 固定 key,put 即覆盖
   } catch {
     return NextResponse.json(
-      { error: "Failed to store package." },
+      { error: "保存压缩包到存储失败。" },
       { status: 500 },
     );
   }
@@ -60,7 +60,7 @@ export async function POST(
     });
   } catch {
     return NextResponse.json(
-      { error: "Failed to update skill package metadata." },
+      { error: "更新 skill 包元数据失败。" },
       { status: 500 },
     );
   }
