@@ -35,8 +35,6 @@ interface FormState {
   description: string;
   longDescription: string;
   tagsCsv: string;
-  docsUrl: string;
-  homepage: string;
   githubRepoUrl: string;
   sourceUrl: string;
 }
@@ -50,8 +48,6 @@ const EMPTY_FORM: FormState = {
   description: "",
   longDescription: "",
   tagsCsv: "",
-  docsUrl: "",
-  homepage: "",
   githubRepoUrl: "",
   sourceUrl: "",
 };
@@ -66,8 +62,6 @@ function toForm(s: AdminSkill): FormState {
     description: pickLocale(s.description, "en"),
     longDescription: pickLocale(s.longDescription, "en"),
     tagsCsv: s.tags.join(", "),
-    docsUrl: s.docsUrl ?? "",
-    homepage: s.homepage ?? "",
     githubRepoUrl: s.githubRepoUrl ?? "",
     sourceUrl: s.sourceUrl ?? "",
   };
@@ -121,8 +115,6 @@ export function AdminSkillEditSheet({
     fd.set("author", form.author.trim());
     fd.set("version", form.version.trim());
     fd.set("tags", form.tagsCsv);
-    fd.set("docsUrl", form.docsUrl.trim());
-    fd.set("homepage", form.homepage.trim());
     fd.set("githubRepoUrl", form.githubRepoUrl.trim());
     fd.set("sourceUrl", form.sourceUrl.trim());
     fd.set("releaseDate", new Date().toISOString().slice(0, 10));
@@ -159,8 +151,6 @@ export function AdminSkillEditSheet({
             .split(",")
             .map((tg) => tg.trim())
             .filter(Boolean),
-          docsUrl: form.docsUrl.trim() || null,
-          homepage: form.homepage.trim() || null,
           githubRepoUrl: form.githubRepoUrl.trim() || null,
           sourceUrl: form.sourceUrl.trim() || null,
         });
@@ -316,24 +306,6 @@ export function AdminSkillEditSheet({
             <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
               {t("sectionInstall")}
             </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="edit-docs">Docs URL</Label>
-                <Input
-                  id="edit-docs"
-                  value={form.docsUrl}
-                  onChange={(e) => set("docsUrl", e.target.value)}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="edit-homepage">Homepage</Label>
-                <Input
-                  id="edit-homepage"
-                  value={form.homepage}
-                  onChange={(e) => set("homepage", e.target.value)}
-                />
-              </div>
-            </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="edit-gh">GitHub repo URL</Label>

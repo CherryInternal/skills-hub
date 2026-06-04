@@ -19,8 +19,6 @@ const metaSchema = z.object({
   author: z.string(),
   version: z.string(),
   tags: z.string(), // 表单里逗号分隔
-  docsUrl: z.string().optional(),
-  homepage: z.string().optional(),
   githubRepoUrl: z.string().optional(),
   sourceUrl: z.string().optional(),
   releaseDate: z.string(),
@@ -72,8 +70,6 @@ export async function POST(req: Request) {
         author: m.author,
         version: m.version,
         tags: m.tags.split(",").map((t) => t.trim()).filter(Boolean),
-        docsUrl: m.docsUrl || null,
-        homepage: m.homepage || null,
         githubRepoUrl: m.githubRepoUrl || null,
         sourceUrl: m.sourceUrl || null,
         packageKey: key,
