@@ -466,25 +466,27 @@ export function AdminSkillEditSheet({
           </section>
         </div>
 
-        <SheetFooter className="gap-3">
+        <SheetFooter className="relative flex-row justify-end gap-2">
+          {/* 绝对定位浮在 footer 上方:出现/消失都不改变 footer 高度,保存按钮不被挤动 */}
           {error && (
-            <Alert variant="destructive">
+            <Alert
+              variant="destructive"
+              className="absolute inset-x-4 bottom-full mb-2 w-auto shadow-md"
+            >
               <TriangleAlert />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <div className="flex flex-row justify-end gap-2">
-            <Button variant="ghost" onClick={() => onOpenChange(false)}>
-              {t("cancel")}
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={busy}
-              className="bg-foreground text-background hover:bg-foreground/90"
-            >
-              {busy ? "保存中…" : t("save")}
-            </Button>
-          </div>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            {t("cancel")}
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={busy}
+            className="bg-foreground text-background hover:bg-foreground/90"
+          >
+            {busy ? "保存中…" : t("save")}
+          </Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>
