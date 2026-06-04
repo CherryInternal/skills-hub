@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -136,8 +134,6 @@ export function AdminSkillEditSheet({
   const [form, setForm] = useState<FormState | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
-  // Inline submit/validation error shown above the footer (replaces alert()).
-  const [error, setError] = useState<string | null>(null);
   // The language tab currently being edited in the localized section.
   const [lang, setLang] = useState<LocaleCode>("en");
   // Tracks whether the user manually edited the id; once true, the id stops
@@ -152,7 +148,6 @@ export function AdminSkillEditSheet({
     setFile(null);
     setIdTouched(false);
     setLang("en");
-    setError(null);
   }, [skill]);
 
   if (!form) {
@@ -202,16 +197,15 @@ export function AdminSkillEditSheet({
   };
 
   const handleSave = async () => {
-    setError(null);
     // English is the primary, required language (matches the backend + the
     // public-site fallback). Block save and jump to the English tab if missing.
     if (!form.locales.en.name.trim()) {
       setLang("en");
-      setError("英文名称为必填(主语言,前台缺其他语言时回退到它)");
+      toast.error("英文名称为必填(主语言,前台缺其他语言时回退到它)");
       return;
     }
     if (isCreate && !file) {
-      setError("新建 skill 必须上传 zip 包");
+      toast.error("新建 skill 必须上传 zip 包");
       return;
     }
     setBusy(true);
@@ -264,7 +258,7 @@ export function AdminSkillEditSheet({
       onOpenChange(false);
       toast.success(isCreate ? "已创建 skill" : "已保存修改");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "保存失败");
+      toast.error(e instanceof Error ? e.message : "保存失败");
     } finally {
       setBusy(false);
     }
@@ -466,17 +460,7 @@ export function AdminSkillEditSheet({
           </section>
         </div>
 
-        <SheetFooter className="relative flex-row justify-end gap-2">
-          {/* 绝对定位浮在 footer 上方:出现/消失都不改变 footer 高度,保存按钮不被挤动 */}
-          {error && (
-            <Alert
-              variant="destructive"
-              className="absolute inset-x-4 bottom-full mb-2 w-auto shadow-md"
-            >
-              <TriangleAlert />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+        <SheetFooter className="flex-row justify-end gap-2">
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             {t("cancel")}
           </Button>
