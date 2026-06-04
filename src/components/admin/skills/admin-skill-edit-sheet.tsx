@@ -21,7 +21,11 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { SKILL_DOMAINS, pickLocale } from "@/components/skills/skills-data";
+import {
+  SKILL_DOMAINS,
+  pickLocale,
+  type LocalizedString,
+} from "@/components/skills/skills-data";
 import { api, type RouterOutputs } from "~/trpc/react";
 
 export type AdminSkill = RouterOutputs["skill"]["adminList"][number];
@@ -29,24 +33,37 @@ export type AdminSkill = RouterOutputs["skill"]["adminList"][number];
 interface FormState {
   id: string;
   name: string;
+  nameZh: string;
   domain: string;
   author: string;
   version: string;
   description: string;
+  descriptionZh: string;
   longDescription: string;
+  longDescriptionZh: string;
   tagsCsv: string;
   githubRepoUrl: string;
   sourceUrl: string;
 }
 
+// Extracts the Chinese translation directly (no English fallback). The skill
+// content fields are `string | { en; zh? }`; only the object form carries `zh`.
+function pickZh(value: LocalizedString | undefined): string {
+  if (value && typeof value === "object") return value.zh ?? "";
+  return "";
+}
+
 const EMPTY_FORM: FormState = {
   id: "",
   name: "",
+  nameZh: "",
   domain: SKILL_DOMAINS[0],
   author: "",
   version: "0.1.0",
   description: "",
+  descriptionZh: "",
   longDescription: "",
+  longDescriptionZh: "",
   tagsCsv: "",
   githubRepoUrl: "",
   sourceUrl: "",
@@ -56,11 +73,14 @@ function toForm(s: AdminSkill): FormState {
   return {
     id: s.id,
     name: pickLocale(s.name, "en"),
+    nameZh: pickZh(s.name),
     domain: s.domain,
     author: s.author,
     version: s.version,
     description: pickLocale(s.description, "en"),
+    descriptionZh: pickZh(s.description),
     longDescription: pickLocale(s.longDescription, "en"),
+    longDescriptionZh: pickZh(s.longDescription),
     tagsCsv: s.tags.join(", "),
     githubRepoUrl: s.githubRepoUrl ?? "",
     sourceUrl: s.sourceUrl ?? "",
@@ -109,8 +129,11 @@ export function AdminSkillEditSheet({
     if (file) fd.set("package", file);
     fd.set("id", skill?.id ?? form.id);
     fd.set("nameEn", form.name.trim());
+    fd.set("nameZh", form.nameZh.trim());
     fd.set("descriptionEn", form.description.trim());
+    fd.set("descriptionZh", form.descriptionZh.trim());
     fd.set("longDescEn", form.longDescription.trim());
+    fd.set("longDescZh", form.longDescriptionZh.trim());
     fd.set("domain", form.domain);
     fd.set("author", form.author.trim());
     fd.set("version", form.version.trim());
@@ -142,11 +165,14 @@ export function AdminSkillEditSheet({
         await update.mutateAsync({
           id: skill.id,
           nameEn: form.name.trim(),
+          nameZh: form.nameZh.trim() || null,
           domain: form.domain,
           author: form.author.trim(),
           version: form.version.trim(),
           descriptionEn: form.description.trim(),
+          descriptionZh: form.descriptionZh.trim() || null,
           longDescEn: form.longDescription.trim(),
+          longDescZh: form.longDescriptionZh.trim() || null,
           tags: form.tagsCsv
             .split(",")
             .map((tg) => tg.trim())
@@ -224,11 +250,19 @@ export function AdminSkillEditSheet({
               </div>
             )}
             <div className="space-y-1.5">
-              <Label htmlFor="edit-name">{t("labelName")}</Label>
+              <Label htmlFor="edit-name">{t("labelName")} / Name (EN)</Label>
               <Input
                 id="edit-name"
                 value={form.name}
                 onChange={(e) => set("name", e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-name-zh">名称(中文)</Label>
+              <Input
+                id="edit-name-zh"
+                value={form.nameZh}
+                onChange={(e) => set("nameZh", e.target.value)}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -283,12 +317,29 @@ export function AdminSkillEditSheet({
               />
             </div>
             <div className="space-y-1.5">
+              <Label htmlFor="edit-desc-zh">简短描述(中文)</Label>
+              <Input
+                id="edit-desc-zh"
+                value={form.descriptionZh}
+                onChange={(e) => set("descriptionZh", e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
               <Label htmlFor="edit-long">{t("labelLongDesc")}</Label>
               <Textarea
                 id="edit-long"
                 rows={5}
                 value={form.longDescription}
                 onChange={(e) => set("longDescription", e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-long-zh">完整描述(中文)</Label>
+              <Textarea
+                id="edit-long-zh"
+                rows={5}
+                value={form.longDescriptionZh}
+                onChange={(e) => set("longDescriptionZh", e.target.value)}
               />
             </div>
             <div className="space-y-1.5">
