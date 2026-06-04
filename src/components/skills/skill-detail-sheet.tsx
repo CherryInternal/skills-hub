@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Sparkles,
-  Star,
   Download,
   Check,
   Copy,
@@ -21,7 +20,6 @@ import {
   WifiOff,
   Network,
   ScrollText,
-  CheckCircle2,
   GitCommit,
   MessageSquareQuote,
   Hash,
@@ -53,13 +51,6 @@ const PLATFORMS: Array<{ key: Platform; label: string }> = [
   { key: "cline", label: "Cline" },
 ];
 
-const TRUSTED_AUTHORS = new Set([
-  "CherryIN",
-  "Anthropic",
-  "SiinXu",
-  "OpenRail",
-]);
-
 // ─── helpers ──────────────────────────────────────────────────
 
 function formatInstalls(n: number): string {
@@ -88,35 +79,15 @@ function authorInitials(name: string): string {
     .join("");
 }
 
-function StarRow({ value, size = 3.5 }: { value: number; size?: number }) {
-  const filled = Math.round(value);
-  return (
-    <span className="inline-flex items-center gap-0.5">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Star
-          key={i}
-          style={{ width: `${size * 4}px`, height: `${size * 4}px` }}
-          className={cn(
-            i < filled
-              ? "fill-amber-500 text-amber-500"
-              : "text-muted-foreground/30",
-          )}
-          strokeWidth={0}
-        />
-      ))}
-    </span>
-  );
-}
-
 // Derive a capability matrix from skill metadata
 function deriveCapabilities(skill: Skill) {
   const text = `${pickLocale(skill.name, "en")} ${pickLocale(skill.description, "en")} ${pickLocale(skill.longDescription, "en")} ${skill.tags.join(" ")}`.toLowerCase();
   return [
     {
       key: "verified",
-      label: "Verified author",
+      label: "Curated",
       Icon: Shield,
-      on: TRUSTED_AUTHORS.has(skill.author),
+      on: true,
     },
     {
       key: "streaming",
@@ -143,12 +114,6 @@ function deriveCapabilities(skill: Skill) {
       label: "Open source",
       Icon: GitBranch,
       on: Boolean(skill.githubRepoUrl),
-    },
-    {
-      key: "tested",
-      label: "Tested",
-      Icon: CheckCircle2,
-      on: skill.rating >= 4.5,
     },
   ];
 }
@@ -291,14 +256,11 @@ export function SkillDetailSheet({
   if (!current) return null;
 
   const Icon = Sparkles;
-  const isTrusted = TRUSTED_AUTHORS.has(current.author);
   const caps = deriveCapabilities(current);
   const compatibility = deriveCompatibility(current);
   const examples = buildExamplePrompts(current);
   const changelog = buildChangelog(current);
   const reviews = buildReviews(current);
-  const totalReviews = Math.max(3, Math.floor(current.downloads / 50));
-  const contributors = Math.max(1, Math.floor(current.downloads / 2000) + 1);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -327,14 +289,6 @@ export function SkillDetailSheet({
                 <div className="min-w-0 flex-1">
                   <SheetTitle className="text-foreground flex items-center gap-1.5 text-xl font-bold tracking-tight">
                     <span className="truncate">{pickLocale(current.name, locale)}</span>
-                    {isTrusted && (
-                      <span
-                        className="text-muted-foreground/70 inline-flex size-4 shrink-0 items-center justify-center"
-                        title="Verified author"
-                      >
-                        <CheckCircle2 className="size-3.5" strokeWidth={2} />
-                      </span>
-                    )}
                   </SheetTitle>
                   <p className="text-foreground/80 mt-1 line-clamp-2 max-w-prose text-sm leading-relaxed">
                     {pickLocale(current.description, locale)}
