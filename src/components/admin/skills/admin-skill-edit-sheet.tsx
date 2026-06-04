@@ -315,7 +315,7 @@ export function AdminSkillEditSheet({
             </h3>
             <div className="space-y-1.5">
               <Label htmlFor="edit-pkg">
-                {isCreate ? "Skill 包(zip)" : "替换包(zip,可选)"}
+                {isCreate ? "Skill 包" : "替换包"}
                 {isCreate && <span className="text-destructive ml-0.5">*</span>}
               </Label>
               <Input
@@ -334,7 +334,7 @@ export function AdminSkillEditSheet({
             </div>
             {isCreate && (
               <div className="space-y-1.5">
-                <Label htmlFor="edit-id">id(自动从英文名生成,可改)</Label>
+                <Label htmlFor="edit-id">id</Label>
                 <Input
                   id="edit-id"
                   value={form.id}
