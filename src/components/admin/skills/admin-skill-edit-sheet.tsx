@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -465,27 +466,25 @@ export function AdminSkillEditSheet({
           </section>
         </div>
 
-        {error && (
-          <div
-            role="alert"
-            className="border-destructive/30 bg-destructive/10 text-destructive mx-4 flex items-start gap-2 rounded-md border px-3 py-2 text-sm"
-          >
-            <TriangleAlert className="mt-0.5 size-4 shrink-0" />
-            <span className="min-w-0 break-words">{error}</span>
+        <SheetFooter className="gap-3">
+          {error && (
+            <Alert variant="destructive">
+              <TriangleAlert />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <div className="flex flex-row justify-end gap-2">
+            <Button variant="ghost" onClick={() => onOpenChange(false)}>
+              {t("cancel")}
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={busy}
+              className="bg-foreground text-background hover:bg-foreground/90"
+            >
+              {busy ? "保存中…" : t("save")}
+            </Button>
           </div>
-        )}
-
-        <SheetFooter className="flex-row justify-end gap-2">
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            {t("cancel")}
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={busy}
-            className="bg-foreground text-background hover:bg-foreground/90"
-          >
-            {busy ? "保存中…" : t("save")}
-          </Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>
