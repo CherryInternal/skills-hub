@@ -87,6 +87,7 @@
   },
   "detail": {
     "dataSource": "Data source",
+    "about": "About",
     "curatedBy": "curated · provided by ",
     "provided": "",
     "installHeading": "Install",

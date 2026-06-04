@@ -248,7 +248,7 @@ export function SkillDetailSheet({
               <section className="space-y-1.5">
                 <h3 className="text-foreground inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
                   <ScrollText className="size-3.5" />
-                  About
+                  {t("about")}
                 </h3>
                 <p className="text-foreground text-sm leading-relaxed">
                   {pickLocale(current.longDescription, locale)}
