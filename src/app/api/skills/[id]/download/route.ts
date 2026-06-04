@@ -14,8 +14,10 @@ export async function GET(
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
-  const skill = await db.skill.findUnique({
-    where: { id },
+  // Only published skills are downloadable: an unpublished/draft skill must not
+  // be reachable via a previously-shared download URL.
+  const skill = await db.skill.findFirst({
+    where: { id, published: true },
     select: { packageKey: true, packageName: true },
   });
   if (!skill?.packageKey) {

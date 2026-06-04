@@ -132,11 +132,15 @@ export function AdminSkillEditSheet({
   const update = api.skill.update.useMutation();
 
   useEffect(() => {
+    // Reset every time the sheet opens, not only when `skill` changes: a
+    // "new skill" open keeps skill === null, so depending on `skill` alone
+    // would let a canceled draft (and its File) survive into the next create.
+    if (!open) return;
     setForm(skill ? toForm(skill) : { ...EMPTY_FORM, locales: { en: { ...EMPTY_LOCALE }, zh: { ...EMPTY_LOCALE } } });
     setFile(null);
     setLang("en");
     setErrors({});
-  }, [skill]);
+  }, [skill, open]);
 
   if (!form) {
     return (
