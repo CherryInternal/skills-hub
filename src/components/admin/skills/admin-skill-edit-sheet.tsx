@@ -134,6 +134,8 @@ export function AdminSkillEditSheet({
   const [form, setForm] = useState<FormState | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  // Field-level validation / submit errors, keyed by field name.
+  const [errors, setErrors] = useState<Record<string, string>>({});
   // The language tab currently being edited in the localized section.
   const [lang, setLang] = useState<LocaleCode>("en");
   // Tracks whether the user manually edited the id; once true, the id stops
@@ -148,6 +150,7 @@ export function AdminSkillEditSheet({
     setFile(null);
     setIdTouched(false);
     setLang("en");
+    setErrors({});
   }, [skill]);
 
   if (!form) {
@@ -161,6 +164,15 @@ export function AdminSkillEditSheet({
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => (f ? { ...f, [key]: value } : f));
 
+  // Clears one field's error (called on edit, so a fixed field stops showing red).
+  const clearErr = (key: string) =>
+    setErrors((e) => {
+      if (!(key in e)) return e;
+      const rest = { ...e };
+      delete rest[key];
+      return rest;
+    });
+
   // Updates one field of one language's content.
   const setLoc = (code: LocaleCode, key: keyof LocaleContent, value: string) =>
     setForm((f) =>
@@ -173,6 +185,7 @@ export function AdminSkillEditSheet({
   // user hasn't taken over the id manually).
   const onNameChange = (code: LocaleCode, value: string) => {
     setLoc(code, "name", value);
+    if (code === "en") clearErr("name");
     if (code === "en" && isCreate && !idTouched) set("id", slugify(value));
   };
 
@@ -197,17 +210,20 @@ export function AdminSkillEditSheet({
   };
 
   const handleSave = async () => {
-    // English is the primary, required language (matches the backend + the
-    // public-site fallback). Block save and jump to the English tab if missing.
-    if (!form.locales.en.name.trim()) {
-      setLang("en");
-      toast.error("英文名称为必填(主语言,前台缺其他语言时回退到它)");
+    // Client-side field validation (mirrors backend requirements + what the
+    // storefront renders): English name, author, version, and a zip on create.
+    // Errors render inline under each field rather than as a toast/banner.
+    const errs: Record<string, string> = {};
+    if (!form.locales.en.name.trim()) errs.name = "英文名称为必填(主语言)";
+    if (!form.author.trim()) errs.author = "作者必填";
+    if (!form.version.trim()) errs.version = "版本号必填";
+    if (isCreate && !file) errs.package = "新建 skill 必须上传 zip 包";
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      if (errs.name) setLang("en"); // jump to the English tab so its error shows
       return;
     }
-    if (isCreate && !file) {
-      toast.error("新建 skill 必须上传 zip 包");
-      return;
-    }
+    setErrors({});
     setBusy(true);
     try {
       if (isCreate) {
@@ -215,10 +231,13 @@ export function AdminSkillEditSheet({
           method: "POST",
           body: buildFormData(),
         });
-        if (!res.ok)
-          throw new Error(
-            ((await res.json()) as { error?: string }).error ?? "上传失败",
-          );
+        if (!res.ok) {
+          const msg =
+            ((await res.json()) as { error?: string }).error ?? "上传失败";
+          // 409 = id 冲突 → id 字段;其余多为包/校验问题 → zip 字段
+          setErrors(res.status === 409 ? { id: msg } : { package: msg });
+          return;
+        }
       } else {
         // 元数据走 tRPC update
         await update.mutateAsync({
@@ -247,10 +266,12 @@ export function AdminSkillEditSheet({
             method: "POST",
             body: fd,
           });
-          if (!res.ok)
-            throw new Error(
-              ((await res.json()) as { error?: string }).error ?? "换包失败",
-            );
+          if (!res.ok) {
+            const msg =
+              ((await res.json()) as { error?: string }).error ?? "换包失败";
+            setErrors({ package: msg });
+            return;
+          }
         }
       }
       setFile(null);
@@ -258,7 +279,7 @@ export function AdminSkillEditSheet({
       onOpenChange(false);
       toast.success(isCreate ? "已创建 skill" : "已保存修改");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "保存失败");
+      setErrors({ form: e instanceof Error ? e.message : "保存失败" });
     } finally {
       setBusy(false);
     }
@@ -284,6 +305,9 @@ export function AdminSkillEditSheet({
         </SheetHeader>
 
         <div className="flex flex-col gap-6 px-4 pb-4">
+          {errors.form && (
+            <p className="text-destructive text-sm">{errors.form}</p>
+          )}
           {/* 通用信息：与语言无关的字段 */}
           <section className="space-y-3">
             <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
@@ -297,8 +321,15 @@ export function AdminSkillEditSheet({
                 id="edit-pkg"
                 type="file"
                 accept=".zip,application/zip"
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                aria-invalid={!!errors.package || undefined}
+                onChange={(e) => {
+                  setFile(e.target.files?.[0] ?? null);
+                  clearErr("package");
+                }}
               />
+              {errors.package && (
+                <p className="text-destructive text-xs">{errors.package}</p>
+              )}
             </div>
             {isCreate && (
               <div className="space-y-1.5">
@@ -306,13 +337,18 @@ export function AdminSkillEditSheet({
                 <Input
                   id="edit-id"
                   value={form.id}
+                  aria-invalid={!!errors.id || undefined}
                   onChange={(e) => {
                     set("id", e.target.value);
                     setIdTouched(true);
+                    clearErr("id");
                   }}
                   placeholder="my-skill"
                   className="font-[Menlo,monospace] text-xs"
                 />
+                {errors.id && (
+                  <p className="text-destructive text-xs">{errors.id}</p>
+                )}
               </div>
             )}
             <div className="space-y-1.5">
@@ -339,17 +375,31 @@ export function AdminSkillEditSheet({
                 <Input
                   id="edit-author"
                   value={form.author}
-                  onChange={(e) => set("author", e.target.value)}
+                  aria-invalid={!!errors.author || undefined}
+                  onChange={(e) => {
+                    set("author", e.target.value);
+                    clearErr("author");
+                  }}
                 />
+                {errors.author && (
+                  <p className="text-destructive text-xs">{errors.author}</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="edit-version">{t("labelVersion")}</Label>
                 <Input
                   id="edit-version"
                   value={form.version}
-                  onChange={(e) => set("version", e.target.value)}
+                  aria-invalid={!!errors.version || undefined}
+                  onChange={(e) => {
+                    set("version", e.target.value);
+                    clearErr("version");
+                  }}
                   placeholder="0.1.0"
                 />
+                {errors.version && (
+                  <p className="text-destructive text-xs">{errors.version}</p>
+                )}
               </div>
             </div>
             <div className="space-y-1.5">
@@ -412,8 +462,12 @@ export function AdminSkillEditSheet({
               <Input
                 id="edit-name"
                 value={active.name}
+                aria-invalid={(lang === "en" && !!errors.name) || undefined}
                 onChange={(e) => onNameChange(lang, e.target.value)}
               />
+              {lang === "en" && errors.name && (
+                <p className="text-destructive text-xs">{errors.name}</p>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="edit-desc">{t("labelShortDesc")}</Label>
