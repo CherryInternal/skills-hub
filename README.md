@@ -21,7 +21,7 @@ Key routes:
 ## 本地数据初始化
 
 1. 起依赖:`docker compose up -d db rustfs`
-2. 迁移:`pnpm exec prisma migrate dev`
+2. 同步 schema 到数据库:`pnpm db:push`(开发阶段不维护迁移历史)
 3. 灌演示数据(会把 demo 包上传到 RustFS):`pnpm exec tsx prisma/seed.ts`
 
 > seed 依赖 RustFS 在跑(它会上传 `prisma/demo-packages/*` 的 zip)。
