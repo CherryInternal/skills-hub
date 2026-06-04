@@ -28,7 +28,6 @@ function toSkill(row: SkillRow) {
     packageSize: row.packageSize ?? undefined,
     hasPackage: row.packageKey != null, // 前台据此显示下载 UI;不暴露内部 key
     downloads: row.downloads,
-    rating: row.rating,
     releaseDate: row.releaseDate.toISOString().slice(0, 10),
     published: row.published,
   };
@@ -37,7 +36,6 @@ function toSkill(row: SkillRow) {
 const ORDER: Record<string, Prisma.SkillOrderByWithRelationInput> = {
   popular: { downloads: "desc" },
   newest: { releaseDate: "desc" },
-  rating: { rating: "desc" },
   name_asc: { nameEn: "asc" },
 };
 
@@ -57,7 +55,6 @@ const skillInput = z.object({
   homepage: z.string().nullish(),
   githubRepoUrl: z.string().nullish(),
   sourceUrl: z.string().nullish(),
-  rating: z.number().default(0),
   releaseDate: z.string(),
   published: z.boolean().default(true),
 });
@@ -70,7 +67,7 @@ export const skillRouter = createTRPCRouter({
         domain: z.string().optional(),
         q: z.string().optional(),
         sort: z
-          .enum(["popular", "newest", "rating", "name_asc"])
+          .enum(["popular", "newest", "name_asc"])
           .default("popular"),
         limit: z.number().min(1).max(200).default(60),
         offset: z.number().min(0).default(0),
