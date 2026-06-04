@@ -235,7 +235,7 @@ export function SkillsMarketplace() {
 
   return (
     <>
-      <Section className="px-6 !py-16 sm:px-8">
+      <Section className="px-6 sm:px-8 pt-8! pb-16!">
         <div className="max-w-container mx-auto flex flex-col gap-6 sm:gap-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex flex-col gap-1.5">
