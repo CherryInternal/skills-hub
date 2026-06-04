@@ -365,6 +365,13 @@
     border-color: rgba(255, 102, 102, 0.3);
     color: #ff6666 !important;
   }
+
+  /* sonner toast 是在 Radix Dialog/Sheet(modal)打开时触发的;Radix 会把
+     Sheet 以外的元素标记为不可交互,导致 toast 的关闭按钮点不动。单独给
+     toast 恢复 pointer-events(容器空隙仍可穿透点击)。 */
+  [data-sonner-toast] {
+    pointer-events: auto;
+  }
 }
 
 @layer utilities {
