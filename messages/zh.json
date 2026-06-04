@@ -87,6 +87,7 @@
   },
   "detail": {
     "dataSource": "数据来源",
+    "about": "介绍",
     "curatedBy": "精选 · 由",
     "provided": "提供",
     "installHeading": "安装",
