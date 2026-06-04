@@ -1,13 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { db } from "~/server/db";
-import { downloadRateLimiter } from "~/server/rate-limit";
+import { clientIp, downloadRateLimiter } from "~/server/rate-limit";
 import { getPresignedUrl } from "~/server/storage";
-
-function clientIp(req: Request): string {
-  const xff = req.headers.get("x-forwarded-for");
-  return xff?.split(",")[0]?.trim() || "unknown";
-}
 
 export async function GET(
   req: Request,

@@ -72,3 +72,17 @@ export const downloadRateLimiter = new InMemoryRateLimiter(
   undefined,
   true,
 );
+
+/** 公开 REST 接口(列表 / 详情)用:每 IP 每分钟 120 次。 */
+export const publicApiRateLimiter = new InMemoryRateLimiter(
+  120,
+  60_000,
+  undefined,
+  true,
+);
+
+/** 从请求头取客户端 IP(x-forwarded-for 第一跳),用作限流 key。 */
+export function clientIp(req: Request): string {
+  const xff = req.headers.get("x-forwarded-for");
+  return xff?.split(",")[0]?.trim() || "unknown";
+}
