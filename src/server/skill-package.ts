@@ -20,21 +20,32 @@ export function validateSkillZip(
       error: `压缩包体积超出上限(最大 ${Math.round(maxBytes / 1024 / 1024)} MB)。`,
     };
   }
+  // 解压前的 zip 炸弹防护:fflate 的 filter 在每个条目解压**之前**回调,且带有
+  // zip 头里声明的解压后大小 originalSize(无需解压即可读)。一旦累计超限就标记
+  // 并跳过其余条目,避免 unzipSync 把整个炸弹先解压进内存(原先「先全解压再检查」
+  // 为时已晚,压缩后 <50MB 的炸弹仍会 OOM)。
+  let uncompressed = 0;
+  let tooBig = false;
   let files: Record<string, Uint8Array>;
   try {
-    files = unzipSync(new Uint8Array(buf));
+    files = unzipSync(new Uint8Array(buf), {
+      filter: (file) => {
+        uncompressed += file.originalSize;
+        if (uncompressed > maxUncompressedBytes) {
+          tooBig = true;
+          return false; // 不解压该条目及其后续,内存维持在上限内
+        }
+        return true;
+      },
+    });
   } catch {
     return { ok: false, error: "这不是有效的 zip 压缩包。" };
   }
-  let uncompressed = 0;
-  for (const entry of Object.values(files)) {
-    uncompressed += entry.byteLength;
-    if (uncompressed > maxUncompressedBytes) {
-      return {
-        ok: false,
-        error: `解压后体积超出上限(最大 ${Math.round(maxUncompressedBytes / 1024 / 1024)} MB)。`,
-      };
-    }
+  if (tooBig) {
+    return {
+      ok: false,
+      error: `解压后体积超出上限(最大 ${Math.round(maxUncompressedBytes / 1024 / 1024)} MB)。`,
+    };
   }
   const hasSkillMd = Object.keys(files).some(
     (name) => name === "SKILL.md" || /^[^/]+\/SKILL\.md$/.test(name),

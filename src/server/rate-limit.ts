@@ -81,8 +81,35 @@ export const publicApiRateLimiter = new InMemoryRateLimiter(
   true,
 );
 
-/** 从请求头取客户端 IP(x-forwarded-for 第一跳),用作限流 key。 */
+// 客户端可任意设置 X-Forwarded-For,而代理通常是「追加」而非「覆盖」,所以 XFF
+// 链最左侧(第一个)的值是客户端可控的,绝不能直接当限流 key —— 否则不断更换
+// header 即可绕过限流。可信 IP 是我们自己的反代追加在链「右侧」的值。
+//
+// 取值优先级:平台注入、客户端无法伪造的头(cf-connecting-ip / x-real-ip)>
+// 从 XFF 右侧数第 TRUSTED_PROXY_HOPS 个(默认 1 = 紧邻应用那层反代记录的真实
+// client IP)> "unknown"。直连(无反代)部署应把 TRUSTED_PROXY_HOPS 设为 0,
+// 让 XFF 完全不被信任。
+const TRUSTED_PROXY_HOPS = Math.max(
+  0,
+  Number.parseInt(process.env.TRUSTED_PROXY_HOPS ?? "1", 10) || 0,
+);
+
 export function clientIp(req: Request): string {
-  const xff = req.headers.get("x-forwarded-for");
-  return xff?.split(",")[0]?.trim() || "unknown";
+  const real =
+    req.headers.get("cf-connecting-ip") ?? req.headers.get("x-real-ip");
+  if (real?.trim()) return real.trim();
+
+  if (TRUSTED_PROXY_HOPS > 0) {
+    const xff = req.headers.get("x-forwarded-for");
+    if (xff) {
+      const parts = xff
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      // 从右往左数:右侧由可信代理追加,左侧(尤其第一个)是客户端可控的。
+      const ip = parts[parts.length - TRUSTED_PROXY_HOPS];
+      if (ip) return ip;
+    }
+  }
+  return "unknown";
 }

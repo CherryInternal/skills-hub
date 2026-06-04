@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { InMemoryRateLimiter } from "../rate-limit";
+import { InMemoryRateLimiter, clientIp } from "../rate-limit";
 
 describe("InMemoryRateLimiter", () => {
   it("allows up to the limit then blocks", () => {
@@ -55,5 +55,28 @@ describe("InMemoryRateLimiter", () => {
     t += 1001;
     rl.sweep();
     expect(rl.size()).toBe(0); // window passed → reclaimed
+  });
+});
+
+describe("clientIp", () => {
+  const req = (headers: Record<string, string>) =>
+    new Request("http://x/", { headers });
+
+  it("uses the rightmost (proxy-added) XFF value, not the spoofable first", () => {
+    // Default 1 hop → take the last entry; the client-forged 1.1.1.1 sits on
+    // the far left and must not be used as the rate-limit key.
+    expect(
+      clientIp(req({ "x-forwarded-for": "1.1.1.1, 2.2.2.2, 3.3.3.3" })),
+    ).toBe("3.3.3.3");
+  });
+
+  it("prefers an unspoofable platform header over XFF", () => {
+    expect(
+      clientIp(req({ "x-real-ip": "9.9.9.9", "x-forwarded-for": "1.1.1.1" })),
+    ).toBe("9.9.9.9");
+  });
+
+  it("falls back to 'unknown' with no trusted source", () => {
+    expect(clientIp(req({}))).toBe("unknown");
   });
 });
