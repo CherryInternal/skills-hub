@@ -45,6 +45,11 @@ describe("GET /api/skills/[id]/download (integration)", () => {
     expect((await get(ID)).status).toBe(404);
   });
 
+  it("404 when the skill is unpublished (no download via a shared url)", async () => {
+    await db.skill.update({ where: { id: ID }, data: { published: false } });
+    expect((await get(ID)).status).toBe(404);
+  });
+
   it("sanitizes CRLF in packageName so the redirect location stays single-line", async () => {
     await db.skill.update({
       where: { id: ID },
