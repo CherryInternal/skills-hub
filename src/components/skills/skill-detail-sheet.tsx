@@ -10,7 +10,6 @@ import {
   ExternalLink,
   GitBranch,
   Share2,
-  Flag,
   ChevronRight,
   Calendar,
   Shield,
@@ -22,6 +21,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { toast } from "sonner";
 import { pickLocale, type Skill } from "./skills-data";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -33,15 +33,17 @@ interface SkillDetailSheetProps {
 
 // ─── helpers ──────────────────────────────────────────────────
 
-function relativeTime(iso: string): string {
+function relativeTime(iso: string, locale: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
   const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (days === 0) return "today";
-  if (days === 1) return "yesterday";
-  if (days < 30) return `${days}d ago`;
+  const zh = locale === "zh";
+  if (days <= 0) return zh ? "今天" : "today";
+  if (days === 1) return zh ? "昨天" : "yesterday";
+  if (days < 30) return zh ? `${days} 天前` : `${days}d ago`;
   const months = Math.floor(days / 30);
-  if (months < 12) return `${months}mo ago`;
-  return `${Math.floor(months / 12)}y ago`;
+  if (months < 12) return zh ? `${months} 个月前` : `${months}mo ago`;
+  const years = Math.floor(months / 12);
+  return zh ? `${years} 年前` : `${years}y ago`;
 }
 
 // ─── download panel ──────────────────────────────────────────
@@ -132,7 +134,7 @@ export function SkillDetailSheet({
           <SheetHeader className="border-border/60 bg-background relative space-y-3 border-b px-6 pt-6 pb-5 dark:border-white/[0.08]">
             <div className="text-muted-foreground/70 flex items-center gap-1 text-[11px]">
               <Link href="/" className="hover:text-foreground">
-                Skills
+                {t("breadcrumbRoot")}
               </Link>
               <ChevronRight className="size-3" />
               <span>{current.domain}</span>
@@ -161,7 +163,7 @@ export function SkillDetailSheet({
                     <span className="text-muted-foreground/30">·</span>
                     <span className="inline-flex items-center gap-1">
                       <Calendar className="size-3" />
-                      Updated {relativeTime(current.releaseDate)}
+                      {t("updated", { time: relativeTime(current.releaseDate, locale) })}
                     </span>
                   </div>
                 </div>
@@ -182,23 +184,16 @@ export function SkillDetailSheet({
                 <button
                   type="button"
                   className="bg-background/80 hover:bg-background text-muted-foreground hover:text-foreground inline-flex size-8 cursor-pointer items-center justify-center rounded-md"
-                  aria-label="Share"
-                  title="Share"
-                  onClick={() =>
+                  aria-label={t("shareLabel")}
+                  title={t("shareLabel")}
+                  onClick={() => {
                     void navigator.clipboard.writeText(
                       `${window.location.origin}/?detail=${current.id}`,
-                    )
-                  }
+                    );
+                    toast.success(t("shareCopied"));
+                  }}
                 >
                   <Share2 className="size-4" />
-                </button>
-                <button
-                  type="button"
-                  className="bg-background/80 hover:bg-background text-muted-foreground hover:text-foreground inline-flex size-8 cursor-pointer items-center justify-center rounded-md"
-                  aria-label="Report issue"
-                  title="Report issue"
-                >
-                  <Flag className="size-4" />
                 </button>
               </div>
             </div>
@@ -206,11 +201,11 @@ export function SkillDetailSheet({
             {/* Capability strip */}
             <div className="flex flex-wrap gap-1.5 pt-1">
               <span
-                title="Curated"
+                title={t("curatedBadge")}
                 className="text-muted-foreground ring-foreground/10 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset dark:ring-white/[0.10]"
               >
                 <Shield className="size-2.5" strokeWidth={2} />
-                Curated
+                {t("curatedBadge")}
               </span>
             </div>
           </SheetHeader>
