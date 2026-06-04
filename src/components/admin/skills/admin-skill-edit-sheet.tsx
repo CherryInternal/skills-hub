@@ -30,20 +30,31 @@ import { api, type RouterOutputs } from "~/trpc/react";
 
 export type AdminSkill = RouterOutputs["skill"]["adminList"][number];
 
+// Languages offered in the localized editor. `en` is the primary, required
+// language — it is what the public site falls back to (pickLocale) and what the
+// backend enforces (nameEn .min(1)). Adding a language is just one entry here.
+const LOCALES = [
+  { code: "en", label: "English", primary: true },
+  { code: "zh", label: "中文", primary: false },
+] as const;
+type LocaleCode = (typeof LOCALES)[number]["code"];
+
+// The per-language content. Everything else on a skill is language-agnostic.
+interface LocaleContent {
+  name: string;
+  description: string;
+  longDescription: string;
+}
+
 interface FormState {
   id: string;
-  name: string;
-  nameZh: string;
   domain: string;
   author: string;
   version: string;
-  description: string;
-  descriptionZh: string;
-  longDescription: string;
-  longDescriptionZh: string;
   tagsCsv: string;
   githubRepoUrl: string;
   sourceUrl: string;
+  locales: Record<LocaleCode, LocaleContent>;
 }
 
 // Extracts the Chinese translation directly (no English fallback). The skill
@@ -52,6 +63,25 @@ function pickZh(value: LocalizedString | undefined): string {
   if (value && typeof value === "object") return value.zh ?? "";
   return "";
 }
+
+// Reads one language's content off a skill. English uses pickLocale (which is
+// the canonical/fallback value); other languages read their own arm only.
+function readLocale(s: AdminSkill, code: LocaleCode): LocaleContent {
+  if (code === "en") {
+    return {
+      name: pickLocale(s.name, "en"),
+      description: pickLocale(s.description, "en"),
+      longDescription: pickLocale(s.longDescription, "en"),
+    };
+  }
+  return {
+    name: pickZh(s.name),
+    description: pickZh(s.description),
+    longDescription: pickZh(s.longDescription),
+  };
+}
+
+const EMPTY_LOCALE: LocaleContent = { name: "", description: "", longDescription: "" };
 
 // Generates a kebab-case slug from an arbitrary (English) name.
 function slugify(s: string): string {
@@ -64,35 +94,25 @@ function slugify(s: string): string {
 
 const EMPTY_FORM: FormState = {
   id: "",
-  name: "",
-  nameZh: "",
   domain: SKILL_DOMAINS[0],
   author: "",
   version: "0.1.0",
-  description: "",
-  descriptionZh: "",
-  longDescription: "",
-  longDescriptionZh: "",
   tagsCsv: "",
   githubRepoUrl: "",
   sourceUrl: "",
+  locales: { en: { ...EMPTY_LOCALE }, zh: { ...EMPTY_LOCALE } },
 };
 
 function toForm(s: AdminSkill): FormState {
   return {
     id: s.id,
-    name: pickLocale(s.name, "en"),
-    nameZh: pickZh(s.name),
     domain: s.domain,
     author: s.author,
     version: s.version,
-    description: pickLocale(s.description, "en"),
-    descriptionZh: pickZh(s.description),
-    longDescription: pickLocale(s.longDescription, "en"),
-    longDescriptionZh: pickZh(s.longDescription),
     tagsCsv: s.tags.join(", "),
     githubRepoUrl: s.githubRepoUrl ?? "",
     sourceUrl: s.sourceUrl ?? "",
+    locales: { en: readLocale(s, "en"), zh: readLocale(s, "zh") },
   };
 }
 
@@ -113,6 +133,8 @@ export function AdminSkillEditSheet({
   const [form, setForm] = useState<FormState | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  // The language tab currently being edited in the localized section.
+  const [lang, setLang] = useState<LocaleCode>("en");
   // Tracks whether the user manually edited the id; once true, the id stops
   // auto-following the (English) name.
   const [idTouched, setIdTouched] = useState(false);
@@ -121,9 +143,10 @@ export function AdminSkillEditSheet({
   const update = api.skill.update.useMutation();
 
   useEffect(() => {
-    setForm(skill ? toForm(skill) : { ...EMPTY_FORM });
+    setForm(skill ? toForm(skill) : { ...EMPTY_FORM, locales: { en: { ...EMPTY_LOCALE }, zh: { ...EMPTY_LOCALE } } });
     setFile(null);
     setIdTouched(false);
+    setLang("en");
   }, [skill]);
 
   if (!form) {
@@ -137,23 +160,31 @@ export function AdminSkillEditSheet({
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => (f ? { ...f, [key]: value } : f));
 
-  // Updates the English name and, while creating a new skill and the user
-  // hasn't manually touched the id, keeps the id in sync as a slug.
-  const onNameChange = (value: string) => {
-    set("name", value);
-    if (isCreate && !idTouched) set("id", slugify(value));
+  // Updates one field of one language's content.
+  const setLoc = (code: LocaleCode, key: keyof LocaleContent, value: string) =>
+    setForm((f) =>
+      f
+        ? { ...f, locales: { ...f.locales, [code]: { ...f.locales[code], [key]: value } } }
+        : f,
+    );
+
+  // Editing the English name also seeds the id slug (while creating and the
+  // user hasn't taken over the id manually).
+  const onNameChange = (code: LocaleCode, value: string) => {
+    setLoc(code, "name", value);
+    if (code === "en" && isCreate && !idTouched) set("id", slugify(value));
   };
 
   const buildFormData = (): FormData => {
     const fd = new FormData();
     if (file) fd.set("package", file);
     fd.set("id", skill?.id ?? form.id);
-    fd.set("nameEn", form.name.trim());
-    fd.set("nameZh", form.nameZh.trim());
-    fd.set("descriptionEn", form.description.trim());
-    fd.set("descriptionZh", form.descriptionZh.trim());
-    fd.set("longDescEn", form.longDescription.trim());
-    fd.set("longDescZh", form.longDescriptionZh.trim());
+    fd.set("nameEn", form.locales.en.name.trim());
+    fd.set("nameZh", form.locales.zh.name.trim());
+    fd.set("descriptionEn", form.locales.en.description.trim());
+    fd.set("descriptionZh", form.locales.zh.description.trim());
+    fd.set("longDescEn", form.locales.en.longDescription.trim());
+    fd.set("longDescZh", form.locales.zh.longDescription.trim());
     fd.set("domain", form.domain);
     fd.set("author", form.author.trim());
     fd.set("version", form.version.trim());
@@ -165,6 +196,13 @@ export function AdminSkillEditSheet({
   };
 
   const handleSave = async () => {
+    // English is the primary, required language (matches the backend + the
+    // public-site fallback). Block save and jump to the English tab if missing.
+    if (!form.locales.en.name.trim()) {
+      setLang("en");
+      alert("英文名称为必填(主语言,前台缺其他语言时回退到它)");
+      return;
+    }
     setBusy(true);
     try {
       if (isCreate) {
@@ -184,15 +222,15 @@ export function AdminSkillEditSheet({
         // 元数据走 tRPC update
         await update.mutateAsync({
           id: skill.id,
-          nameEn: form.name.trim(),
-          nameZh: form.nameZh.trim() || null,
+          nameEn: form.locales.en.name.trim(),
+          nameZh: form.locales.zh.name.trim() || null,
           domain: form.domain,
           author: form.author.trim(),
           version: form.version.trim(),
-          descriptionEn: form.description.trim(),
-          descriptionZh: form.descriptionZh.trim() || null,
-          longDescEn: form.longDescription.trim(),
-          longDescZh: form.longDescriptionZh.trim() || null,
+          descriptionEn: form.locales.en.description.trim(),
+          descriptionZh: form.locales.zh.description.trim() || null,
+          longDescEn: form.locales.en.longDescription.trim(),
+          longDescZh: form.locales.zh.longDescription.trim() || null,
           tags: form.tagsCsv
             .split(",")
             .map((tg) => tg.trim())
@@ -224,6 +262,8 @@ export function AdminSkillEditSheet({
     }
   };
 
+  const active = form.locales[lang];
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
@@ -242,9 +282,10 @@ export function AdminSkillEditSheet({
         </SheetHeader>
 
         <div className="flex flex-col gap-6 px-4 pb-4">
+          {/* 通用信息：与语言无关的字段 */}
           <section className="space-y-3">
             <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-              {t("sectionBasic")}
+              {t("sectionGeneral")}
             </h3>
             <div className="space-y-1.5">
               <Label htmlFor="edit-pkg">
@@ -257,17 +298,9 @@ export function AdminSkillEditSheet({
                 onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-name">{t("labelName")} / Name (EN)</Label>
-              <Input
-                id="edit-name"
-                value={form.name}
-                onChange={(e) => onNameChange(e.target.value)}
-              />
-            </div>
             {isCreate && (
               <div className="space-y-1.5">
-                <Label htmlFor="edit-id">id(自动从名称生成,可改)</Label>
+                <Label htmlFor="edit-id">id(自动从英文名生成,可改)</Label>
                 <Input
                   id="edit-id"
                   value={form.id}
@@ -281,12 +314,22 @@ export function AdminSkillEditSheet({
               </div>
             )}
             <div className="space-y-1.5">
-              <Label htmlFor="edit-name-zh">名称(中文)</Label>
-              <Input
-                id="edit-name-zh"
-                value={form.nameZh}
-                onChange={(e) => set("nameZh", e.target.value)}
-              />
+              <Label>{t("labelDomain")}</Label>
+              <Select
+                value={form.domain}
+                onValueChange={(v) => set("domain", v)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SKILL_DOMAINS.map((d) => (
+                    <SelectItem key={d} value={d}>
+                      {d}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -308,64 +351,6 @@ export function AdminSkillEditSheet({
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label>{t("labelDomain")}</Label>
-              <Select
-                value={form.domain}
-                onValueChange={(v) => set("domain", v)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SKILL_DOMAINS.map((d) => (
-                    <SelectItem key={d} value={d}>
-                      {d}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </section>
-
-          <section className="space-y-3">
-            <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-              {t("sectionContent")}
-            </h3>
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-desc">{t("labelShortDesc")}</Label>
-              <Input
-                id="edit-desc"
-                value={form.description}
-                onChange={(e) => set("description", e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-desc-zh">简短描述(中文)</Label>
-              <Input
-                id="edit-desc-zh"
-                value={form.descriptionZh}
-                onChange={(e) => set("descriptionZh", e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-long">{t("labelLongDesc")}</Label>
-              <Textarea
-                id="edit-long"
-                rows={5}
-                value={form.longDescription}
-                onChange={(e) => set("longDescription", e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-long-zh">完整描述(中文)</Label>
-              <Textarea
-                id="edit-long-zh"
-                rows={5}
-                value={form.longDescriptionZh}
-                onChange={(e) => set("longDescriptionZh", e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
               <Label htmlFor="edit-tags">{t("labelTags")}</Label>
               <Input
                 id="edit-tags"
@@ -376,9 +361,81 @@ export function AdminSkillEditSheet({
             </div>
           </section>
 
+          {/* 多语言内容：按语言切换编辑 */}
           <section className="space-y-3">
             <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-              {t("sectionInstall")}
+              {t("sectionLocalized")}
+            </h3>
+
+            {/* 语言切换 */}
+            <div className="bg-muted/50 flex items-center gap-1 rounded-lg p-1">
+              {LOCALES.map((l) => {
+                const filled = form.locales[l.code].name.trim().length > 0;
+                const isActive = lang === l.code;
+                return (
+                  <button
+                    key={l.code}
+                    type="button"
+                    onClick={() => setLang(l.code)}
+                    className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {l.label}
+                    {l.primary && (
+                      <span className="bg-foreground/10 text-foreground/70 rounded px-1 py-0.5 text-[9px] font-medium tracking-wide uppercase">
+                        {t("langPrimary")}
+                      </span>
+                    )}
+                    {filled && (
+                      <span className="size-1.5 rounded-full bg-emerald-500" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-muted-foreground text-[11px] leading-relaxed">
+              {t("langHint")}
+            </p>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-name">
+                {t("labelName")}
+                {lang === "en" && (
+                  <span className="text-destructive ml-0.5">*</span>
+                )}
+              </Label>
+              <Input
+                id="edit-name"
+                value={active.name}
+                onChange={(e) => onNameChange(lang, e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-desc">{t("labelShortDesc")}</Label>
+              <Input
+                id="edit-desc"
+                value={active.description}
+                onChange={(e) => setLoc(lang, "description", e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-long">{t("labelLongDesc")}</Label>
+              <Textarea
+                id="edit-long"
+                rows={5}
+                value={active.longDescription}
+                onChange={(e) => setLoc(lang, "longDescription", e.target.value)}
+              />
+            </div>
+          </section>
+
+          {/* 链接：与语言无关 */}
+          <section className="space-y-3">
+            <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+              {t("sectionLinks")}
             </h3>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
