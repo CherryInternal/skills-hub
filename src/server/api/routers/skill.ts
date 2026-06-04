@@ -1,11 +1,12 @@
 import { z } from "zod";
 
-import type { Prisma, Skill as SkillRow } from "../../../../generated/prisma";
+import type { Skill as SkillRow } from "../../../../generated/prisma";
 import {
   createTRPCRouter,
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
+import { buildSkillWhere, SKILL_ORDER } from "~/server/skill-query";
 import { deleteObject } from "~/server/storage";
 
 // DB row → frontend Skill shape (LocalizedString {en, zh?}), so existing
@@ -30,12 +31,6 @@ function toSkill(row: SkillRow) {
     published: row.published,
   };
 }
-
-const ORDER: Record<string, Prisma.SkillOrderByWithRelationInput> = {
-  popular: { downloads: "desc" },
-  newest: { releaseDate: "desc" },
-  name_asc: { nameEn: "asc" },
-};
 
 const skillInput = z.object({
   id: z.string().min(1),
@@ -70,22 +65,11 @@ export const skillRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const where: Prisma.SkillWhereInput = { published: true };
-      if (input.domain) where.domain = input.domain;
-      const q = input.q?.trim();
-      if (q) {
-        where.OR = [
-          { nameEn: { contains: q, mode: "insensitive" } },
-          { nameZh: { contains: q, mode: "insensitive" } },
-          { descriptionEn: { contains: q, mode: "insensitive" } },
-          { author: { contains: q, mode: "insensitive" } },
-          { tags: { has: q } },
-        ];
-      }
+      const where = buildSkillWhere({ domain: input.domain, q: input.q });
       const [rows, total] = await Promise.all([
         ctx.db.skill.findMany({
           where,
-          orderBy: ORDER[input.sort] ?? ORDER.popular,
+          orderBy: SKILL_ORDER[input.sort],
           take: input.limit,
           skip: input.offset,
         }),

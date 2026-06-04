@@ -14,9 +14,18 @@ pnpm dev          # http://localhost:3000
 
 Key routes:
 
-- `/skills_marketplace` — public skill discovery & install
-- `/admin/skills` — admin console (curated catalog, review queue, listings)
-- `/api/marketplace/listings` — public listings API
+- `/` — public skill marketplace (browse, search, download)
+- `/admin` — admin console (upload, edit, publish curated skills)
+
+Public REST API (read-only, no auth, only published skills; IP rate-limited 120/min):
+
+- `GET /api/skills` — list skills. Query params: `q` (keyword over EN/ZH name &
+  description, author, tags), `domain`, `sort` (`popular`|`newest`|`name_asc`),
+  `limit` (1–100, default 20), `offset` (default 0). Returns
+  `{ items, pagination: { total, limit, offset, hasMore } }`. List items omit
+  `longDescription` to stay light.
+- `GET /api/skills/:id` — a single skill, full info incl. `longDescription`.
+- `GET /api/skills/:id/download` — 302 → presigned package URL (counts a download).
 
 ## 本地数据初始化
 
