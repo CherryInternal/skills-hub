@@ -15,11 +15,18 @@ const db = new PrismaClient();
 const seedDir = dirname(fileURLToPath(import.meta.url));
 
 function packDemo(slug: string): Buffer {
-  const dir = join(seedDir, "demo-packages", slug);
+  const root = join(seedDir, "demo-packages", slug);
   const entries: Record<string, Uint8Array> = {};
-  for (const name of readdirSync(dir)) {
-    entries[name] = new Uint8Array(readFileSync(join(dir, name)));
-  }
+  // 递归遍历:支持子目录,zip 内保留相对路径(如 scripts/run.sh)。
+  const walk = (dir: string, prefix: string) => {
+    for (const ent of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, ent.name);
+      const rel = prefix ? `${prefix}/${ent.name}` : ent.name;
+      if (ent.isDirectory()) walk(full, rel);
+      else entries[rel] = new Uint8Array(readFileSync(full));
+    }
+  };
+  walk(root, "");
   return Buffer.from(zipSync(entries));
 }
 

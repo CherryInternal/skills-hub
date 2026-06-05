@@ -1,6 +1,6 @@
 import { strToU8, zipSync } from "fflate";
 import { describe, expect, it } from "vitest";
-import { MAX_PACKAGE_BYTES, validateSkillZip } from "../skill-package";
+import { MAX_PACKAGE_BYTES, listSkillFiles, validateSkillZip } from "../skill-package";
 
 function makeZip(files: Record<string, string>): Buffer {
   const entries: Record<string, Uint8Array> = {};
@@ -39,5 +39,17 @@ describe("validateSkillZip", () => {
     // compressed bytes are well under default 50MB, but uncompressed > 50 bytes.
     const res = validateSkillZip(zip, MAX_PACKAGE_BYTES, 50);
     expect(res.ok).toBe(false);
+  });
+});
+
+describe("listSkillFiles", () => {
+  it("lists file paths + uncompressed sizes (incl. nested dirs)", () => {
+    const zip = makeZip({ "SKILL.md": "# hi", "scripts/run.sh": "echo hi" });
+    const files = listSkillFiles(zip);
+    expect(files.map((f) => f.path).sort()).toEqual([
+      "SKILL.md",
+      "scripts/run.sh",
+    ]);
+    expect(files.find((f) => f.path === "SKILL.md")?.size).toBe(4); // "# hi"
   });
 });

@@ -63,3 +63,12 @@ export async function getPresignedUrl(
   });
   return getSignedUrl(s3, cmd, { expiresIn });
 }
+
+/** 拉取对象到内存(后端解析用,例如读取 zip 的文件清单)。 */
+export async function getObject(key: string): Promise<Buffer> {
+  const res = await s3.send(
+    new GetObjectCommand({ Bucket: env.S3_BUCKET, Key: key }),
+  );
+  if (!res.Body) throw new Error("Empty object body");
+  return Buffer.from(await res.Body.transformToByteArray());
+}
