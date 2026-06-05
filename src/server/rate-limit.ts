@@ -81,6 +81,18 @@ export const publicApiRateLimiter = new InMemoryRateLimiter(
   true,
 );
 
+/**
+ * 管理员登录用:每 IP 每 10 分钟 10 次尝试。后台是单一共享 ADMIN_PASSWORD,
+ * 失败入口必须挡在线暴力猜密码。每次提交都计数(成功也算 —— 真人管理员一个
+ * 窗口内远到不了上限)。
+ */
+export const adminLoginRateLimiter = new InMemoryRateLimiter(
+  10,
+  600_000,
+  undefined,
+  true,
+);
+
 // 客户端可任意设置 X-Forwarded-For,而代理通常是「追加」而非「覆盖」,所以 XFF
 // 链最左侧(第一个)的值是客户端可控的,绝不能直接当限流 key —— 否则不断更换
 // header 即可绕过限流。可信 IP 是我们自己的反代追加在链「右侧」的值。
@@ -95,12 +107,19 @@ const TRUSTED_PROXY_HOPS = Math.max(
 );
 
 export function clientIp(req: Request): string {
+  return clientIpFromHeaders(req.headers);
+}
+
+// 同样的可信-IP 取值逻辑,但接 Headers —— server action 用 next/headers 的
+// headers() 只拿得到 headers(没有 Request),登录限流走这个入口。参数放宽到
+// 仅需 get(),好让只读的 ReadonlyHeaders 也能传进来。
+export function clientIpFromHeaders(headers: Pick<Headers, "get">): string {
   const real =
-    req.headers.get("cf-connecting-ip") ?? req.headers.get("x-real-ip");
+    headers.get("cf-connecting-ip") ?? headers.get("x-real-ip");
   if (real?.trim()) return real.trim();
 
   if (TRUSTED_PROXY_HOPS > 0) {
-    const xff = req.headers.get("x-forwarded-for");
+    const xff = headers.get("x-forwarded-for");
     if (xff) {
       const parts = xff
         .split(",")
