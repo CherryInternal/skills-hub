@@ -63,21 +63,21 @@ function fileRows(
       <div
         key={path}
         onClick={isFile ? () => onSelect(path) : undefined}
-        className={`flex items-center gap-1.5 rounded py-0.5 text-xs ${
+        className={`flex items-center gap-2 rounded py-1 text-sm ${
           isFile ? "hover:bg-accent cursor-pointer" : ""
         } ${selected === path ? "bg-accent" : ""}`}
-        style={{ paddingLeft: depth * 14 + 4 }}
+        style={{ paddingLeft: depth * 16 + 6 }}
       >
         {node.children ? (
-          <Folder className="text-muted-foreground size-3.5 shrink-0" />
+          <Folder className="text-muted-foreground size-4 shrink-0" />
         ) : (
-          <FileText className="text-muted-foreground/60 size-3.5 shrink-0" />
+          <FileText className="text-muted-foreground/60 size-4 shrink-0" />
         )}
         <span className="text-foreground/90 truncate font-[Menlo,monospace]">
           {node.name}
         </span>
         {node.size != null && (
-          <span className="text-muted-foreground/60 ml-auto shrink-0 pl-2 tabular-nums">
+          <span className="text-muted-foreground/60 ml-auto shrink-0 pl-2 text-xs tabular-nums">
             {formatBytes(node.size)}
           </span>
         )}
@@ -139,42 +139,42 @@ export function PackageFileBrowser({
 
   if (failed)
     return (
-      <div className={`${boxClass} text-muted-foreground p-3 text-xs`}>
+      <div className={`${boxClass} text-muted-foreground p-4 text-sm`}>
         {t("packageContentsError")}
       </div>
     );
   if (files === null)
     return (
-      <div className={`${boxClass} text-muted-foreground p-3 text-xs`}>
+      <div className={`${boxClass} text-muted-foreground p-4 text-sm`}>
         {t("packageContentsLoading")}
       </div>
     );
   if (files.length === 0)
     return (
-      <div className={`${boxClass} text-muted-foreground p-3 text-xs`}>—</div>
+      <div className={`${boxClass} text-muted-foreground p-4 text-sm`}>—</div>
     );
 
   return (
     <div className={`${boxClass} flex flex-col overflow-hidden sm:flex-row`}>
       {/* 左:文件树 */}
-      <div className="border-border/60 max-h-80 overflow-auto border-b p-2 sm:max-h-[32rem] sm:w-56 sm:shrink-0 sm:border-r sm:border-b-0 dark:border-white/[0.08]">
+      <div className="border-border/60 max-h-80 overflow-auto border-b p-2 sm:max-h-[36rem] sm:w-64 sm:shrink-0 sm:border-r sm:border-b-0 dark:border-white/[0.08]">
         {fileRows(buildTree(files), selected, setSelected)}
       </div>
       {/* 右:选中文件内容 */}
-      <div className="max-h-80 min-w-0 flex-1 overflow-auto p-3 sm:max-h-[32rem]">
+      <div className="max-h-80 min-w-0 flex-1 overflow-auto p-4 sm:max-h-[36rem]">
         {!selectedFile ? (
-          <p className="text-muted-foreground text-xs">{t("filePreviewHint")}</p>
+          <p className="text-muted-foreground text-sm">{t("filePreviewHint")}</p>
         ) : (
           <>
-            <div className="text-muted-foreground/70 mb-1.5 truncate font-[Menlo,monospace] text-[10px]">
+            <div className="text-muted-foreground/70 mb-2 truncate font-[Menlo,monospace] text-xs">
               {selectedFile.path}
             </div>
             {selectedFile.text === null ? (
-              <p className="text-muted-foreground text-xs">
+              <p className="text-muted-foreground text-sm">
                 {t("filePreviewUnavailable")}
               </p>
             ) : (
-              <pre className="text-foreground/90 font-[Menlo,monospace] text-[11px] leading-relaxed whitespace-pre-wrap">
+              <pre className="text-foreground/90 font-[Menlo,monospace] text-[13px] leading-relaxed whitespace-pre-wrap">
                 {selectedFile.text}
               </pre>
             )}
