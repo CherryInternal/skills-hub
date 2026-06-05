@@ -1,0 +1,77 @@
+# Production stack: app + db + rustfs, one `docker compose up`.
+# Reads secrets from a `.env` file (copy .env.production.example → .env).
+# db and rustfs are NOT published to the public internet — only the app talks
+# to them over the compose network. An external nginx reverse-proxies the app
+# (and rustfs, for downloads — see DEPLOY.md).
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: skills-hub-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: skills-hub-rustfs
+    restart: unless-stopped
+    command:
+      [
+        "--address",
+        ":9000",
+        "--access-key",
+        "${S3_ACCESS_KEY}",
+        "--secret-key",
+        "${S3_SECRET_KEY}",
+        "/data",
+      ]
+    environment:
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY}
+    volumes:
+      - rustfs_data:/data
+    # Bind to localhost only so the external nginx can reverse-proxy it to a
+    # public storage host (download URLs are presigned and hit RustFS directly).
+    ports:
+      - "127.0.0.1:9000:9000"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: skills-hub-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      rustfs:
+        condition: service_started
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+      # Uploads/list use this endpoint; presigned download URLs also embed it,
+      # so it must be reachable BY THE CLIENT (a public host nginx maps to
+      # rustfs), not the internal http://rustfs:9000. See DEPLOY.md.
+      S3_ENDPOINT: ${S3_ENDPOINT}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_BUCKET: ${S3_BUCKET}
+      AUTH_SECRET: ${AUTH_SECRET}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      APP_URL: ${APP_URL}
+      TRUSTED_PROXY_HOPS: ${TRUSTED_PROXY_HOPS:-1}
+    # Bind to localhost only; the external nginx terminates TLS and proxies here.
+    ports:
+      - "127.0.0.1:3000:3000"
+
+volumes:
+  pgdata:
+  rustfs_data:
