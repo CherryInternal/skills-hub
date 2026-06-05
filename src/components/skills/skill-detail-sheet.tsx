@@ -214,7 +214,13 @@ function PackageContents({ skill }: { skill: Skill }) {
           : Promise.reject(new Error()),
       )
       .then((d) => {
-        if (!cancelled) setFiles(d.files);
+        if (cancelled) return;
+        setFiles(d.files);
+        // Default-select SKILL.md (or the first previewable file).
+        const def =
+          d.files.find((f) => f.path === "SKILL.md" && f.text !== null) ??
+          d.files.find((f) => f.text !== null);
+        setSelected(def?.path ?? null);
       })
       .catch(() => {
         if (!cancelled) setFailed(true);
@@ -227,6 +233,8 @@ function PackageContents({ skill }: { skill: Skill }) {
   if (!skill.hasPackage) return null;
 
   const selectedFile = files?.find((f) => f.path === selected) ?? null;
+  const boxClass =
+    "border-border bg-card rounded-lg border dark:border-white/[0.12]";
 
   return (
     <section className="space-y-2">
@@ -234,23 +242,32 @@ function PackageContents({ skill }: { skill: Skill }) {
         <FolderTree className="size-3.5" />
         {t("packageContents")}
       </h3>
-      <div className="border-border bg-card rounded-lg border p-3 dark:border-white/[0.12]">
-        {failed ? (
-          <p className="text-muted-foreground text-xs">
-            {t("packageContentsError")}
-          </p>
-        ) : files === null ? (
-          <p className="text-muted-foreground text-xs">
-            {t("packageContentsLoading")}
-          </p>
-        ) : files.length === 0 ? (
-          <p className="text-muted-foreground text-xs">—</p>
-        ) : (
-          <>
-            <div>{fileRows(buildTree(files), selected, setSelected)}</div>
-            {selectedFile && (
-              <div className="border-border/60 mt-2 border-t pt-2 dark:border-white/[0.08]">
-                <div className="text-muted-foreground/70 mb-1 truncate font-[Menlo,monospace] text-[10px]">
+
+      {failed ? (
+        <div className={`${boxClass} text-muted-foreground p-3 text-xs`}>
+          {t("packageContentsError")}
+        </div>
+      ) : files === null ? (
+        <div className={`${boxClass} text-muted-foreground p-3 text-xs`}>
+          {t("packageContentsLoading")}
+        </div>
+      ) : files.length === 0 ? (
+        <div className={`${boxClass} text-muted-foreground p-3 text-xs`}>—</div>
+      ) : (
+        <div className={`${boxClass} flex flex-col overflow-hidden sm:flex-row`}>
+          {/* 左:文件树 */}
+          <div className="border-border/60 max-h-80 overflow-auto border-b p-2 sm:max-h-96 sm:w-52 sm:shrink-0 sm:border-r sm:border-b-0 dark:border-white/[0.08]">
+            {fileRows(buildTree(files), selected, setSelected)}
+          </div>
+          {/* 右:选中文件内容 */}
+          <div className="max-h-80 min-w-0 flex-1 overflow-auto p-3 sm:max-h-96">
+            {!selectedFile ? (
+              <p className="text-muted-foreground text-xs">
+                {t("filePreviewHint")}
+              </p>
+            ) : (
+              <>
+                <div className="text-muted-foreground/70 mb-1.5 truncate font-[Menlo,monospace] text-[10px]">
                   {selectedFile.path}
                 </div>
                 {selectedFile.text === null ? (
@@ -258,15 +275,15 @@ function PackageContents({ skill }: { skill: Skill }) {
                     {t("filePreviewUnavailable")}
                   </p>
                 ) : (
-                  <pre className="text-foreground/90 max-h-64 overflow-auto font-[Menlo,monospace] text-[11px] leading-relaxed whitespace-pre-wrap">
+                  <pre className="text-foreground/90 font-[Menlo,monospace] text-[11px] leading-relaxed whitespace-pre-wrap">
                     {selectedFile.text}
                   </pre>
                 )}
-              </div>
+              </>
             )}
-          </>
-        )}
-      </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
