@@ -86,8 +86,11 @@ function buildTree(
 }
 
 // Renders the tree as indented rows (folders first, then files, A→Z).
+// Files are clickable to preview their content below.
 function fileRows(
   nodes: Map<string, TreeNode>,
+  selected: string | null,
+  onSelect: (path: string) => void,
   depth = 0,
   prefix = "",
 ): ReactNode[] {
@@ -99,12 +102,16 @@ function fileRows(
   });
   const out: ReactNode[] = [];
   for (const node of sorted) {
-    const key = `${prefix}/${node.name}`;
+    const path = prefix ? `${prefix}/${node.name}` : node.name;
+    const isFile = !node.children;
     out.push(
       <div
-        key={key}
-        className="flex items-center gap-1.5 py-0.5 text-xs"
-        style={{ paddingLeft: depth * 14 }}
+        key={path}
+        onClick={isFile ? () => onSelect(path) : undefined}
+        className={`flex items-center gap-1.5 rounded py-0.5 text-xs ${
+          isFile ? "hover:bg-accent cursor-pointer" : ""
+        } ${selected === path ? "bg-accent" : ""}`}
+        style={{ paddingLeft: depth * 14 + 4 }}
       >
         {node.children ? (
           <Folder className="text-muted-foreground size-3.5 shrink-0" />
@@ -121,7 +128,8 @@ function fileRows(
         )}
       </div>,
     );
-    if (node.children) out.push(...fileRows(node.children, depth + 1, key));
+    if (node.children)
+      out.push(...fileRows(node.children, selected, onSelect, depth + 1, path));
   }
   return out;
 }
@@ -185,22 +193,24 @@ function DownloadPanel({ skill }: { skill: Skill }) {
 
 // ─── package contents ───────────────────────────────────────
 
+type PkgFile = { path: string; size: number; text: string | null };
+
 function PackageContents({ skill }: { skill: Skill }) {
   const t = useTranslations("detail");
-  const [files, setFiles] = useState<{ path: string; size: number }[] | null>(
-    null,
-  );
+  const [files, setFiles] = useState<PkgFile[] | null>(null);
   const [failed, setFailed] = useState(false);
+  const [selected, setSelected] = useState<string | null>(null);
 
   useEffect(() => {
     if (!skill.hasPackage) return;
     let cancelled = false;
     setFiles(null);
     setFailed(false);
+    setSelected(null);
     fetch(`/api/skills/${skill.id}/contents`)
       .then((r) =>
         r.ok
-          ? (r.json() as Promise<{ files: { path: string; size: number }[] }>)
+          ? (r.json() as Promise<{ files: PkgFile[] }>)
           : Promise.reject(new Error()),
       )
       .then((d) => {
@@ -215,6 +225,8 @@ function PackageContents({ skill }: { skill: Skill }) {
   }, [skill.id, skill.hasPackage]);
 
   if (!skill.hasPackage) return null;
+
+  const selectedFile = files?.find((f) => f.path === selected) ?? null;
 
   return (
     <section className="space-y-2">
@@ -234,7 +246,25 @@ function PackageContents({ skill }: { skill: Skill }) {
         ) : files.length === 0 ? (
           <p className="text-muted-foreground text-xs">—</p>
         ) : (
-          <div>{fileRows(buildTree(files))}</div>
+          <>
+            <div>{fileRows(buildTree(files), selected, setSelected)}</div>
+            {selectedFile && (
+              <div className="border-border/60 mt-2 border-t pt-2 dark:border-white/[0.08]">
+                <div className="text-muted-foreground/70 mb-1 truncate font-[Menlo,monospace] text-[10px]">
+                  {selectedFile.path}
+                </div>
+                {selectedFile.text === null ? (
+                  <p className="text-muted-foreground text-xs">
+                    {t("filePreviewUnavailable")}
+                  </p>
+                ) : (
+                  <pre className="text-foreground/90 max-h-64 overflow-auto font-[Menlo,monospace] text-[11px] leading-relaxed whitespace-pre-wrap">
+                    {selectedFile.text}
+                  </pre>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
     </section>

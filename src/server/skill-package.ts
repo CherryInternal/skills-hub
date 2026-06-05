@@ -59,20 +59,53 @@ export function validateSkillZip(
   return { ok: true };
 }
 
+export const MATERIALIZE_MAX_FILE_BYTES = 256 * 1024; // 单文件存文本上限
+export const MATERIALIZE_MAX_TOTAL_BYTES = 2 * 1024 * 1024; // 一个包存文本总上限
+
+export type MaterializedFile = {
+  path: string;
+  size: number; // 解压后字节
+  text: string | null; // 文本内容(限长内);二进制或超限为 null,只留路径
+};
+
+// 简单启发:开头若干字节含 NUL 即视为二进制。
+function isBinary(bytes: Uint8Array): boolean {
+  const n = Math.min(bytes.length, 8000);
+  for (let i = 0; i < n; i++) if (bytes[i] === 0) return true;
+  return false;
+}
+
 /**
- * 只读 zip 中央目录列出文件(路径 + 解压后大小),**不解压任何内容**:借 fflate 的
- * filter 在每个条目解压前回调读取元数据,然后一律返回 false 跳过解压。
+ * 解压 zip 并「物化」成展示数据:每个文件的 path + 解压后 size,以及**小文本文件**的
+ * 内容(带单文件 / 总量上限;二进制或超限的 text 为 null,只留路径)。供详情页文件
+ * 浏览器展示,物化进 DB 后即可零回源。借 fflate 的 filter 只解压要存文本的小文件,
+ * 大文件只读元数据,避免把大 / 二进制内容读进内存。
  */
-export function listSkillFiles(buf: Buffer): { path: string; size: number }[] {
-  const files: { path: string; size: number }[] = [];
-  unzipSync(new Uint8Array(buf), {
+export function materializeSkillFiles(
+  buf: Buffer,
+  opts: { maxFileBytes?: number; maxTotalBytes?: number } = {},
+): MaterializedFile[] {
+  const maxFileBytes = opts.maxFileBytes ?? MATERIALIZE_MAX_FILE_BYTES;
+  const maxTotalBytes = opts.maxTotalBytes ?? MATERIALIZE_MAX_TOTAL_BYTES;
+  const meta: { path: string; size: number; wantText: boolean }[] = [];
+  let textBudget = maxTotalBytes;
+  const decompressed = unzipSync(new Uint8Array(buf), {
     filter: (file) => {
-      // 跳过纯目录条目(name 以 / 结尾),只收文件
-      if (!file.name.endsWith("/")) {
-        files.push({ path: file.name, size: file.originalSize });
-      }
-      return false;
+      if (file.name.endsWith("/")) return false; // 跳过纯目录条目
+      const wantText =
+        file.originalSize <= maxFileBytes &&
+        textBudget - file.originalSize >= 0;
+      meta.push({ path: file.name, size: file.originalSize, wantText });
+      if (wantText) textBudget -= file.originalSize;
+      return wantText; // 只解压要存文本的小文件;大 / 超限只读元数据
     },
   });
-  return files;
+  return meta.map((m) => {
+    let text: string | null = null;
+    if (m.wantText) {
+      const bytes = decompressed[m.path];
+      if (bytes && !isBinary(bytes)) text = new TextDecoder().decode(bytes);
+    }
+    return { path: m.path, size: m.size, text };
+  });
 }

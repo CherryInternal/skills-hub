@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { isAdminRequest } from "~/server/auth";
 import { db } from "~/server/db";
-import { validateSkillZip } from "~/server/skill-package";
+import { materializeSkillFiles, validateSkillZip } from "~/server/skill-package";
 import { ensureBucket, putObject } from "~/server/storage";
 
 export async function POST(
@@ -56,6 +56,7 @@ export async function POST(
         packageName: file.name,
         packageSize: buf.byteLength,
         packageUploadedAt: new Date(),
+        packageFiles: materializeSkillFiles(buf),
       },
     });
   } catch {
