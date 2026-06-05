@@ -44,13 +44,31 @@ services:
     ports:
       - "127.0.0.1:9000:9000"
 
+  # One-shot schema sync via the build stage (it has the Prisma CLI), so the
+  # runtime image can stay slim (standalone). app waits for this to finish.
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: build
+    command: ["pnpm", "exec", "prisma", "db", "push", "--skip-generate"]
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
+      target: runner
     container_name: skills-hub-app
     restart: unless-stopped
     depends_on:
+      migrate:
+        condition: service_completed_successfully
       db:
         condition: service_healthy
       rustfs:
