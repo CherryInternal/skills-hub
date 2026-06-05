@@ -47,7 +47,12 @@ export default async function SkillPage({
             {t("breadcrumbRoot")}
           </Link>
           <ChevronRight className="size-3" />
-          <span>{skill.domain}</span>
+          <Link
+            href={`/?domain=${encodeURIComponent(skill.domain)}`}
+            className="hover:text-foreground"
+          >
+            {skill.domain}
+          </Link>
           <ChevronRight className="size-3" />
           <span className="text-foreground">{name}</span>
         </nav>
