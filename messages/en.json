@@ -101,6 +101,7 @@
     "packageContentsLoading": "Reading package contents…",
     "packageContentsError": "Couldn't read package contents",
     "filePreviewUnavailable": "Binary or too large — download to view",
+    "filePreviewHint": "Select a file to view its content",
     "download": "Download package",
     "noPackage": "No package available yet",
     "copyAgentPrompt": "Copy agent install prompt",
