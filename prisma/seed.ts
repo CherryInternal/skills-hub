@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { zipSync } from "fflate";
 
 import { PrismaClient } from "../generated/prisma";
-import { extractSkillMd, materializeSkillFiles } from "../src/server/skill-package";
+import { extractSkillMd } from "../src/server/skill-package";
 import { ensureBucket, putObject } from "../src/server/storage";
 import { SKILLS } from "./demo-seed";
 
@@ -46,7 +46,6 @@ async function main() {
     const desc = loc(s.description);
     const long = loc(s.longDescription);
     const zip = packDemo(s.slug);
-    const files = materializeSkillFiles(zip);
     // Surrogate uuid primary key; the package object is keyed by it too.
     const id = randomUUID();
     const key = `skills/${id}.zip`;
@@ -71,8 +70,7 @@ async function main() {
         packageName: `${s.slug}.zip`,
         packageSize: zip.byteLength,
         packageUploadedAt: new Date(),
-        packageFiles: files,
-        skillMd: extractSkillMd(files),
+        skillMd: extractSkillMd(zip),
         downloads: 0,
         releaseDate: new Date(s.releaseDate),
         published: true,

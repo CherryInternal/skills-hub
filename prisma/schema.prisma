@@ -30,8 +30,7 @@ model Skill {
   packageName       String?
   packageSize       Int?
   packageUploadedAt DateTime?
-  packageFiles      Json?     // 物化的文件树 + 限长文本(展示用,避免每次回源解压 zip)
-  skillMd           String?   // SKILL.md 内容(随列表带下来,Sheet 秒渲染主体)
+  skillMd           String?   // SKILL.md 内容(随列表带下来,Sheet 渲染主体)
   downloads     Int      @default(0)
   releaseDate   DateTime
   published     Boolean  @default(true)
