@@ -39,6 +39,7 @@ export interface Skill {
   packageName?: string;
   packageSize?: number;
   hasPackage?: boolean;
+  skillMd?: string;
   uploadedFile?: string;
   releaseDate: string;
 }

@@ -88,6 +88,8 @@
   "detail": {
     "dataSource": "Data source",
     "about": "About",
+    "docHeading": "Documentation",
+    "viewFullContent": "View full content",
     "breadcrumbRoot": "Skills",
     "updated": "Updated {time}",
     "shareLabel": "Share",

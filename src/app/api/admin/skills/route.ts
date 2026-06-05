@@ -5,7 +5,11 @@ import { z } from "zod";
 
 import { isAdminRequest } from "~/server/auth";
 import { db } from "~/server/db";
-import { materializeSkillFiles, validateSkillZip } from "~/server/skill-package";
+import {
+  extractSkillMd,
+  materializeSkillFiles,
+  validateSkillZip,
+} from "~/server/skill-package";
 import { ensureBucket, putObject } from "~/server/storage";
 
 const metaSchema = z.object({
@@ -55,6 +59,7 @@ export async function POST(req: Request) {
   // package filename and the public URL id.
   const id = randomUUID();
   const key = `skills/${id}.zip`;
+  const files = materializeSkillFiles(buf);
 
   // Create the row before touching storage, then roll back the row if the
   // object write fails — so we never leave a skill whose packageKey points at
@@ -80,7 +85,8 @@ export async function POST(req: Request) {
         packageName: file.name,
         packageSize: buf.byteLength,
         packageUploadedAt: new Date(),
-        packageFiles: materializeSkillFiles(buf),
+        packageFiles: files,
+        skillMd: extractSkillMd(files),
         releaseDate: new Date(m.releaseDate),
         published: true,
       },
