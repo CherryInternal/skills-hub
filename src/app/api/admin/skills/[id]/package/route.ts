@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 
 import { isAdminRequest } from "~/server/auth";
 import { db } from "~/server/db";
-import {
-  extractSkillMd,
-  materializeSkillFiles,
-  validateSkillZip,
-} from "~/server/skill-package";
+import { extractSkillMd, validateSkillZip } from "~/server/skill-package";
 import { ensureBucket, putObject } from "~/server/storage";
 
 export async function POST(
@@ -34,7 +30,6 @@ export async function POST(
   }
 
   const key = `skills/${id}.zip`;
-  const files = materializeSkillFiles(buf);
 
   // Storage-first, then metadata. The key is fixed (`skills/<id>.zip`), so
   // putObject overwrites in place — there is no orphan to clean up and no
@@ -61,8 +56,7 @@ export async function POST(
         packageName: file.name,
         packageSize: buf.byteLength,
         packageUploadedAt: new Date(),
-        packageFiles: files,
-        skillMd: extractSkillMd(files),
+        skillMd: extractSkillMd(buf),
       },
     });
   } catch {

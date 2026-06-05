@@ -16,7 +16,6 @@ import {
   Shield,
   Star,
   ScrollText,
-  ArrowRight,
 } from "lucide-react";
 import {
   Sheet,
@@ -276,15 +275,6 @@ export function SkillDetailSheet({
                     <p className="text-foreground/80 text-sm leading-relaxed">
                       {pickLocale(current.longDescription, locale)}
                     </p>
-                  )}
-                  {current.hasPackage && (
-                    <Link
-                      href={`/skills/${current.id}`}
-                      className="border-border/60 text-muted-foreground hover:text-foreground mt-3 inline-flex items-center gap-1 border-t pt-3 text-xs font-medium underline-offset-2 hover:underline dark:border-white/[0.08]"
-                    >
-                      {t("viewFullContent")}
-                      <ArrowRight className="size-3.5" />
-                    </Link>
                   )}
                 </div>
               </section>
