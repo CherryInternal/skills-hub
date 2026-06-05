@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { SkillMarkdown } from "./skill-markdown";
 import {
   Sparkles,
   Download,
@@ -265,26 +264,24 @@ export function SkillDetailSheet({
                   <ScrollText className="size-3.5" />
                   {t("docHeading")}
                 </h3>
-                {current.skillMd ? (
-                  <div className="prose prose-sm dark:prose-invert prose-pre:bg-muted/50 prose-pre:text-foreground/90 max-w-none">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {current.skillMd}
-                    </ReactMarkdown>
-                  </div>
-                ) : (
-                  <p className="text-foreground text-sm leading-relaxed">
-                    {pickLocale(current.longDescription, locale)}
-                  </p>
-                )}
-                {current.hasPackage && (
-                  <Link
-                    href={`/skills/${current.id}`}
-                    className="text-muted-foreground hover:text-foreground mt-2 inline-flex items-center gap-1 text-xs font-medium underline-offset-2 hover:underline"
-                  >
-                    {t("viewFullContent")}
-                    <ArrowRight className="size-3.5" />
-                  </Link>
-                )}
+                <div className="border-border bg-card rounded-lg border p-4 dark:border-white/[0.12]">
+                  {current.skillMd ? (
+                    <SkillMarkdown>{current.skillMd}</SkillMarkdown>
+                  ) : (
+                    <p className="text-foreground/80 text-sm leading-relaxed">
+                      {pickLocale(current.longDescription, locale)}
+                    </p>
+                  )}
+                  {current.hasPackage && (
+                    <Link
+                      href={`/skills/${current.id}`}
+                      className="border-border/60 text-muted-foreground hover:text-foreground mt-3 inline-flex items-center gap-1 border-t pt-3 text-xs font-medium underline-offset-2 hover:underline dark:border-white/[0.08]"
+                    >
+                      {t("viewFullContent")}
+                      <ArrowRight className="size-3.5" />
+                    </Link>
+                  )}
+                </div>
               </section>
             </div>
           </div>
