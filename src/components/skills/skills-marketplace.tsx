@@ -131,7 +131,12 @@ export function SkillsMarketplace() {
   const skillsQuery = api.skill.list.useQuery({ limit: 200 });
   const allSkills = (skillsQuery.data?.items ?? []) as Skill[];
 
-  const [activeDomain, setActiveDomain] = useState<SkillDomain | null>(null);
+  const [activeDomain, setActiveDomain] = useState<SkillDomain | null>(() => {
+    const d = searchParams.get("domain");
+    return d && (SKILL_DOMAINS as readonly string[]).includes(d)
+      ? (d as SkillDomain)
+      : null;
+  });
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOption>("popular");
   const [selected, setSelected] = useState<Skill | null>(null);

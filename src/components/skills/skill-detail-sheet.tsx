@@ -140,7 +140,12 @@ export function SkillDetailSheet({
                 {t("breadcrumbRoot")}
               </Link>
               <ChevronRight className="size-3" />
-              <span>{current.domain}</span>
+              <Link
+                href={`/?domain=${encodeURIComponent(current.domain)}`}
+                className="hover:text-foreground"
+              >
+                {current.domain}
+              </Link>
               <ChevronRight className="size-3" />
               <span>{pickLocale(current.name, locale)}</span>
             </div>
