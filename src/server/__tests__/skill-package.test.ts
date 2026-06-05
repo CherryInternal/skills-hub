@@ -1,6 +1,6 @@
 import { strToU8, zipSync } from "fflate";
 import { describe, expect, it } from "vitest";
-import { MAX_PACKAGE_BYTES, listSkillFiles, validateSkillZip } from "../skill-package";
+import { MAX_PACKAGE_BYTES, materializeSkillFiles, validateSkillZip } from "../skill-package";
 
 function makeZip(files: Record<string, string>): Buffer {
   const entries: Record<string, Uint8Array> = {};
@@ -42,14 +42,25 @@ describe("validateSkillZip", () => {
   });
 });
 
-describe("listSkillFiles", () => {
-  it("lists file paths + uncompressed sizes (incl. nested dirs)", () => {
+describe("materializeSkillFiles", () => {
+  it("returns path + size + text for small text files (incl. nested dirs)", () => {
     const zip = makeZip({ "SKILL.md": "# hi", "scripts/run.sh": "echo hi" });
-    const files = listSkillFiles(zip);
+    const files = materializeSkillFiles(zip);
     expect(files.map((f) => f.path).sort()).toEqual([
       "SKILL.md",
       "scripts/run.sh",
     ]);
-    expect(files.find((f) => f.path === "SKILL.md")?.size).toBe(4); // "# hi"
+    const skillMd = files.find((f) => f.path === "SKILL.md");
+    expect(skillMd?.size).toBe(4); // "# hi"
+    expect(skillMd?.text).toBe("# hi");
+  });
+
+  it("keeps size but drops text for files over the per-file limit", () => {
+    const zip = makeZip({ "SKILL.md": "# hi", "big.txt": "a".repeat(2000) });
+    const files = materializeSkillFiles(zip, { maxFileBytes: 100 });
+    const big = files.find((f) => f.path === "big.txt");
+    expect(big?.size).toBe(2000);
+    expect(big?.text).toBeNull();
+    expect(files.find((f) => f.path === "SKILL.md")?.text).toBe("# hi");
   });
 });

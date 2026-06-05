@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { isAdminRequest } from "~/server/auth";
 import { db } from "~/server/db";
-import { validateSkillZip } from "~/server/skill-package";
+import { materializeSkillFiles, validateSkillZip } from "~/server/skill-package";
 import { ensureBucket, putObject } from "~/server/storage";
 
 const metaSchema = z.object({
@@ -80,6 +80,7 @@ export async function POST(req: Request) {
         packageName: file.name,
         packageSize: buf.byteLength,
         packageUploadedAt: new Date(),
+        packageFiles: materializeSkillFiles(buf),
         releaseDate: new Date(m.releaseDate),
         published: true,
       },

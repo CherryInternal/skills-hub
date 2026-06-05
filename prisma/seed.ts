@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { zipSync } from "fflate";
 
 import { PrismaClient } from "../generated/prisma";
+import { materializeSkillFiles } from "../src/server/skill-package";
 import { ensureBucket, putObject } from "../src/server/storage";
 import { SKILLS } from "./demo-seed";
 
@@ -69,6 +70,7 @@ async function main() {
         packageName: `${s.slug}.zip`,
         packageSize: zip.byteLength,
         packageUploadedAt: new Date(),
+        packageFiles: materializeSkillFiles(zip),
         downloads: 0,
         releaseDate: new Date(s.releaseDate),
         published: true,

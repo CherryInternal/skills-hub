@@ -30,6 +30,7 @@ model Skill {
   packageName       String?
   packageSize       Int?
   packageUploadedAt DateTime?
+  packageFiles      Json?     // 物化的文件树 + 限长文本(展示用,避免每次回源解压 zip)
   downloads     Int      @default(0)
   releaseDate   DateTime
   published     Boolean  @default(true)
