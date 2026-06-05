@@ -97,7 +97,7 @@
     "curatedBy": "curated · provided by ",
     "provided": "",
     "installHeading": "Install",
-    "packageContents": "Package contents",
+    "packageContents": "Contents",
     "packageContentsLoading": "Reading package contents…",
     "packageContentsError": "Couldn't read package contents",
     "filePreviewUnavailable": "Binary or too large — download to view",

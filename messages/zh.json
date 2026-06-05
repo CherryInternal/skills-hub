@@ -97,7 +97,7 @@
     "curatedBy": "精选 · 由",
     "provided": "提供",
     "installHeading": "安装",
-    "packageContents": "包内容",
+    "packageContents": "内容",
     "packageContentsLoading": "正在读取包内容…",
     "packageContentsError": "无法读取包内容",
     "filePreviewUnavailable": "该文件为二进制或过大,请下载查看",
