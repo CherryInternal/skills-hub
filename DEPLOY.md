@@ -12,12 +12,12 @@ cp .env.production.example .env
 
 # 2. 构建并启动(app + db + rustfs)
 docker compose -f docker-compose.prod.yml up -d --build
-
-# 3. (可选)灌入 demo 样板数据
-docker compose -f docker-compose.prod.yml run --rm app pnpm exec tsx prisma/seed.ts
 ```
 
-- 首次启动 app 容器会自动 `prisma db push` 建表(我们不维护迁移历史,db push 幂等,每次启动跑都安全)。
+- 启动时 `migrate` 服务自动 `prisma db push` 建表(我们不维护迁移历史,db push
+  幂等,每次启动跑都安全),app 等它完成后再起。
+- **生产初始是空库**,内容通过 `/admin` 后台上传 —— seed(`prisma/seed.ts`)只灌
+  demo 样板数据,仅用于开发,生产不跑(slim standalone 镜像里也没有 `tsx`/seed)。
 - 数据持久在两个 volume:`pgdata`(Postgres)、`rustfs_data`(对象存储)。
 
 ## 网络拓扑
