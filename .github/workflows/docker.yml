@@ -1,0 +1,53 @@
+name: Docker
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  ALIYUN_REGISTRY: "${{ vars.ALIYUN_REGISTRY || 'cherry-prod-docker-registry-registry.cn-hangzhou.cr.aliyuncs.com' }}"
+  ALIYUN_NAMESPACE: "${{ vars.ALIYUN_NAMESPACE || 'cherry' }}"
+  ALIYUN_REPOSITORY: "${{ vars.ALIYUN_REPOSITORY || 'skills-hub' }}"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Aliyun ACR
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ALIYUN_REGISTRY }}
+          username: ${{ secrets.ALIYUN_DOCKER_USERNAME }}
+          password: ${{ secrets.ALIYUN_DOCKER_PASSWORD }}
+
+      - name: Build image
+        if: github.event_name == 'pull_request' || github.ref != 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+
+      - name: Build and push image
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.ALIYUN_REGISTRY }}/${{ env.ALIYUN_NAMESPACE }}/${{ env.ALIYUN_REPOSITORY }}:latest
+            ${{ env.ALIYUN_REGISTRY }}/${{ env.ALIYUN_NAMESPACE }}/${{ env.ALIYUN_REPOSITORY }}:sha-${{ github.sha }}
