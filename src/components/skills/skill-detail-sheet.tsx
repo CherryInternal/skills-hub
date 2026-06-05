@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
   Sparkles,
@@ -15,6 +15,9 @@ import {
   Shield,
   Star,
   ScrollText,
+  Folder,
+  FileText,
+  FolderTree,
 } from "lucide-react";
 import {
   Sheet,
@@ -45,6 +48,82 @@ function relativeTime(iso: string, locale: string): string {
   if (months < 12) return zh ? `${months} 个月前` : `${months}mo ago`;
   const years = Math.floor(months / 12);
   return zh ? `${years} 年前` : `${years}y ago`;
+}
+
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / 1024 / 1024).toFixed(1)} MB`;
+}
+
+interface TreeNode {
+  name: string;
+  size?: number;
+  children?: Map<string, TreeNode>;
+}
+
+// Builds a nested tree from flat zip paths ("a/b/c.txt").
+function buildTree(
+  files: { path: string; size: number }[],
+): Map<string, TreeNode> {
+  const root = new Map<string, TreeNode>();
+  for (const f of files) {
+    const parts = f.path.split("/").filter(Boolean);
+    let level = root;
+    parts.forEach((part, i) => {
+      const isFile = i === parts.length - 1;
+      let node = level.get(part);
+      if (!node) {
+        node = isFile
+          ? { name: part, size: f.size }
+          : { name: part, children: new Map() };
+        level.set(part, node);
+      }
+      if (node.children) level = node.children;
+    });
+  }
+  return root;
+}
+
+// Renders the tree as indented rows (folders first, then files, A→Z).
+function fileRows(
+  nodes: Map<string, TreeNode>,
+  depth = 0,
+  prefix = "",
+): ReactNode[] {
+  const sorted = [...nodes.values()].sort((a, b) => {
+    const aDir = !!a.children;
+    const bDir = !!b.children;
+    if (aDir !== bDir) return aDir ? -1 : 1;
+    return a.name.localeCompare(b.name);
+  });
+  const out: ReactNode[] = [];
+  for (const node of sorted) {
+    const key = `${prefix}/${node.name}`;
+    out.push(
+      <div
+        key={key}
+        className="flex items-center gap-1.5 py-0.5 text-xs"
+        style={{ paddingLeft: depth * 14 }}
+      >
+        {node.children ? (
+          <Folder className="text-muted-foreground size-3.5 shrink-0" />
+        ) : (
+          <FileText className="text-muted-foreground/60 size-3.5 shrink-0" />
+        )}
+        <span className="text-foreground/90 truncate font-[Menlo,monospace]">
+          {node.name}
+        </span>
+        {node.size != null && (
+          <span className="text-muted-foreground/60 ml-auto shrink-0 pl-2 tabular-nums">
+            {formatBytes(node.size)}
+          </span>
+        )}
+      </div>,
+    );
+    if (node.children) out.push(...fileRows(node.children, depth + 1, key));
+  }
+  return out;
 }
 
 // ─── download panel ──────────────────────────────────────────
@@ -101,6 +180,64 @@ function DownloadPanel({ skill }: { skill: Skill }) {
         </button>
       </div>
     </div>
+  );
+}
+
+// ─── package contents ───────────────────────────────────────
+
+function PackageContents({ skill }: { skill: Skill }) {
+  const t = useTranslations("detail");
+  const [files, setFiles] = useState<{ path: string; size: number }[] | null>(
+    null,
+  );
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    if (!skill.hasPackage) return;
+    let cancelled = false;
+    setFiles(null);
+    setFailed(false);
+    fetch(`/api/skills/${skill.id}/contents`)
+      .then((r) =>
+        r.ok
+          ? (r.json() as Promise<{ files: { path: string; size: number }[] }>)
+          : Promise.reject(new Error()),
+      )
+      .then((d) => {
+        if (!cancelled) setFiles(d.files);
+      })
+      .catch(() => {
+        if (!cancelled) setFailed(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [skill.id, skill.hasPackage]);
+
+  if (!skill.hasPackage) return null;
+
+  return (
+    <section className="space-y-2">
+      <h3 className="text-foreground inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
+        <FolderTree className="size-3.5" />
+        {t("packageContents")}
+      </h3>
+      <div className="border-border bg-card rounded-lg border p-3 dark:border-white/[0.12]">
+        {failed ? (
+          <p className="text-muted-foreground text-xs">
+            {t("packageContentsError")}
+          </p>
+        ) : files === null ? (
+          <p className="text-muted-foreground text-xs">
+            {t("packageContentsLoading")}
+          </p>
+        ) : files.length === 0 ? (
+          <p className="text-muted-foreground text-xs">—</p>
+        ) : (
+          <div>{fileRows(buildTree(files))}</div>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -266,6 +403,9 @@ export function SkillDetailSheet({
                 </h3>
                 <DownloadPanel skill={current} />
               </section>
+
+              {/* 包内容 */}
+              <PackageContents skill={current} />
             </div>
           </div>
         </div>

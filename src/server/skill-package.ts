@@ -58,3 +58,21 @@ export function validateSkillZip(
   }
   return { ok: true };
 }
+
+/**
+ * 只读 zip 中央目录列出文件(路径 + 解压后大小),**不解压任何内容**:借 fflate 的
+ * filter 在每个条目解压前回调读取元数据,然后一律返回 false 跳过解压。
+ */
+export function listSkillFiles(buf: Buffer): { path: string; size: number }[] {
+  const files: { path: string; size: number }[] = [];
+  unzipSync(new Uint8Array(buf), {
+    filter: (file) => {
+      // 跳过纯目录条目(name 以 / 结尾),只收文件
+      if (!file.name.endsWith("/")) {
+        files.push({ path: file.name, size: file.originalSize });
+      }
+      return false;
+    },
+  });
+  return files;
+}
