@@ -7,8 +7,6 @@ import {
   ExternalLink,
   Star,
   Shield,
-  ScrollText,
-  FolderTree,
   Sparkles,
 } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -19,8 +17,7 @@ import {
   pickLocale,
   type SkillDomain,
 } from "@/components/skills/skills-data";
-import { PackageFileBrowser } from "@/components/skills/package-file-browser";
-import { SkillMarkdown } from "@/components/skills/skill-markdown";
+import { SkillContentTabs } from "@/components/skills/skill-content-tabs";
 
 // Full-page skill view (SSR) — the roomy counterpart to the preview Sheet:
 // SKILL.md as the README-style main content + a sidebar + the file browser.
@@ -82,34 +79,13 @@ export default async function SkillPage({
 
         {/* 两栏:主内容 + sidebar */}
         <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_288px]">
-          {/* 主栏 */}
-          <div className="min-w-0 space-y-6">
-            {/* SKILL.md README 卡片 */}
-            {skill.skillMd && (
-              <section className="border-border bg-card overflow-hidden rounded-xl border dark:border-white/[0.12]">
-                <div className="border-border/60 text-muted-foreground flex items-center gap-1.5 border-b px-5 py-2.5 text-xs font-semibold tracking-wide uppercase dark:border-white/[0.08]">
-                  <ScrollText className="size-3.5" />
-                  SKILL.md
-                </div>
-                <div className="px-5 py-4">
-                  <SkillMarkdown>{skill.skillMd}</SkillMarkdown>
-                </div>
-              </section>
-            )}
-
-            {/* 文件浏览器 */}
-            {skill.hasPackage && (
-              <section className="space-y-2">
-                <h2 className="text-foreground inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
-                  <FolderTree className="size-3.5" />
-                  {t("packageContents")}
-                </h2>
-                <PackageFileBrowser
-                  skillId={skill.id}
-                  hasPackage={!!skill.hasPackage}
-                />
-              </section>
-            )}
+          {/* 主栏:SKILL.md / 内容 切换 */}
+          <div className="min-w-0">
+            <SkillContentTabs
+              skillMd={skill.skillMd ?? null}
+              skillId={skill.id}
+              hasPackage={!!skill.hasPackage}
+            />
           </div>
 
           {/* Sidebar */}
