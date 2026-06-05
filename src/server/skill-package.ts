@@ -109,3 +109,11 @@ export function materializeSkillFiles(
     return { path: m.path, size: m.size, text };
   });
 }
+
+// 从物化结果里取 SKILL.md 的文本(根目录,或单层顶级目录下),供详情主体渲染。
+export function extractSkillMd(files: MaterializedFile[]): string | null {
+  const f =
+    files.find((x) => x.path === "SKILL.md") ??
+    files.find((x) => /^[^/]+\/SKILL\.md$/.test(x.path));
+  return f?.text ?? null;
+}

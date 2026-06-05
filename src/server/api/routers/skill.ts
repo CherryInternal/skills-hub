@@ -11,7 +11,7 @@ import { deleteObject } from "~/server/storage";
 
 // DB row → frontend Skill shape (LocalizedString {en, zh?}), so existing
 // components keep using pickLocale() unchanged.
-function toSkill(row: SkillRow) {
+function toSkill(row: Omit<SkillRow, "packageFiles">) {
   return {
     id: row.id,
     name: { en: row.nameEn, zh: row.nameZh ?? undefined },
@@ -26,6 +26,7 @@ function toSkill(row: SkillRow) {
     packageName: row.packageName ?? undefined,
     packageSize: row.packageSize ?? undefined,
     hasPackage: row.packageKey != null, // 前台据此显示下载 UI;不暴露内部 key
+    skillMd: row.skillMd ?? undefined,
     downloads: row.downloads,
     releaseDate: row.releaseDate.toISOString().slice(0, 10),
     published: row.published,
@@ -72,6 +73,7 @@ export const skillRouter = createTRPCRouter({
           orderBy: SKILL_ORDER[input.sort],
           take: input.limit,
           skip: input.offset,
+          omit: { packageFiles: true }, // 列表不需要完整文件内容(大)
         }),
         ctx.db.skill.count({ where }),
       ]);
@@ -85,6 +87,7 @@ export const skillRouter = createTRPCRouter({
       // fetched by guessing/knowing an id.
       const row = await ctx.db.skill.findFirst({
         where: { id: input.id, published: true },
+        omit: { packageFiles: true },
       });
       return row ? toSkill(row) : null;
     }),
@@ -102,7 +105,10 @@ export const skillRouter = createTRPCRouter({
 
   // ── admin (protected: requires admin session) ──────────
   adminList: protectedProcedure.query(async ({ ctx }) => {
-    const rows = await ctx.db.skill.findMany({ orderBy: { updatedAt: "desc" } });
+    const rows = await ctx.db.skill.findMany({
+      orderBy: { updatedAt: "desc" },
+      omit: { packageFiles: true },
+    });
     return rows.map(toSkill);
   }),
 
@@ -126,6 +132,7 @@ export const skillRouter = createTRPCRouter({
           ...rest,
           ...(releaseDate ? { releaseDate: new Date(releaseDate) } : {}),
         },
+        omit: { packageFiles: true },
       });
       return toSkill(row);
     }),

@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useState } from "react";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   Sparkles,
   Download,
@@ -15,9 +17,7 @@ import {
   Shield,
   Star,
   ScrollText,
-  Folder,
-  FileText,
-  FolderTree,
+  ArrowRight,
 } from "lucide-react";
 import {
   Sheet,
@@ -48,90 +48,6 @@ function relativeTime(iso: string, locale: string): string {
   if (months < 12) return zh ? `${months} 个月前` : `${months}mo ago`;
   const years = Math.floor(months / 12);
   return zh ? `${years} 年前` : `${years}y ago`;
-}
-
-function formatBytes(n: number): string {
-  if (n < 1024) return `${n} B`;
-  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
-  return `${(n / 1024 / 1024).toFixed(1)} MB`;
-}
-
-interface TreeNode {
-  name: string;
-  size?: number;
-  children?: Map<string, TreeNode>;
-}
-
-// Builds a nested tree from flat zip paths ("a/b/c.txt").
-function buildTree(
-  files: { path: string; size: number }[],
-): Map<string, TreeNode> {
-  const root = new Map<string, TreeNode>();
-  for (const f of files) {
-    const parts = f.path.split("/").filter(Boolean);
-    let level = root;
-    parts.forEach((part, i) => {
-      const isFile = i === parts.length - 1;
-      let node = level.get(part);
-      if (!node) {
-        node = isFile
-          ? { name: part, size: f.size }
-          : { name: part, children: new Map() };
-        level.set(part, node);
-      }
-      if (node.children) level = node.children;
-    });
-  }
-  return root;
-}
-
-// Renders the tree as indented rows (folders first, then files, A→Z).
-// Files are clickable to preview their content below.
-function fileRows(
-  nodes: Map<string, TreeNode>,
-  selected: string | null,
-  onSelect: (path: string) => void,
-  depth = 0,
-  prefix = "",
-): ReactNode[] {
-  const sorted = [...nodes.values()].sort((a, b) => {
-    const aDir = !!a.children;
-    const bDir = !!b.children;
-    if (aDir !== bDir) return aDir ? -1 : 1;
-    return a.name.localeCompare(b.name);
-  });
-  const out: ReactNode[] = [];
-  for (const node of sorted) {
-    const path = prefix ? `${prefix}/${node.name}` : node.name;
-    const isFile = !node.children;
-    out.push(
-      <div
-        key={path}
-        onClick={isFile ? () => onSelect(path) : undefined}
-        className={`flex items-center gap-1.5 rounded py-0.5 text-xs ${
-          isFile ? "hover:bg-accent cursor-pointer" : ""
-        } ${selected === path ? "bg-accent" : ""}`}
-        style={{ paddingLeft: depth * 14 + 4 }}
-      >
-        {node.children ? (
-          <Folder className="text-muted-foreground size-3.5 shrink-0" />
-        ) : (
-          <FileText className="text-muted-foreground/60 size-3.5 shrink-0" />
-        )}
-        <span className="text-foreground/90 truncate font-[Menlo,monospace]">
-          {node.name}
-        </span>
-        {node.size != null && (
-          <span className="text-muted-foreground/60 ml-auto shrink-0 pl-2 tabular-nums">
-            {formatBytes(node.size)}
-          </span>
-        )}
-      </div>,
-    );
-    if (node.children)
-      out.push(...fileRows(node.children, selected, onSelect, depth + 1, path));
-  }
-  return out;
 }
 
 // ─── download panel ──────────────────────────────────────────
@@ -188,103 +104,6 @@ function DownloadPanel({ skill }: { skill: Skill }) {
         </button>
       </div>
     </div>
-  );
-}
-
-// ─── package contents ───────────────────────────────────────
-
-type PkgFile = { path: string; size: number; text: string | null };
-
-function PackageContents({ skill }: { skill: Skill }) {
-  const t = useTranslations("detail");
-  const [files, setFiles] = useState<PkgFile[] | null>(null);
-  const [failed, setFailed] = useState(false);
-  const [selected, setSelected] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!skill.hasPackage) return;
-    let cancelled = false;
-    setFiles(null);
-    setFailed(false);
-    setSelected(null);
-    fetch(`/api/skills/${skill.id}/contents`)
-      .then((r) =>
-        r.ok
-          ? (r.json() as Promise<{ files: PkgFile[] }>)
-          : Promise.reject(new Error()),
-      )
-      .then((d) => {
-        if (cancelled) return;
-        setFiles(d.files);
-        // Default-select SKILL.md (or the first previewable file).
-        const def =
-          d.files.find((f) => f.path === "SKILL.md" && f.text !== null) ??
-          d.files.find((f) => f.text !== null);
-        setSelected(def?.path ?? null);
-      })
-      .catch(() => {
-        if (!cancelled) setFailed(true);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [skill.id, skill.hasPackage]);
-
-  if (!skill.hasPackage) return null;
-
-  const selectedFile = files?.find((f) => f.path === selected) ?? null;
-  const boxClass =
-    "border-border bg-card rounded-lg border dark:border-white/[0.12]";
-
-  return (
-    <section className="space-y-2">
-      <h3 className="text-foreground inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
-        <FolderTree className="size-3.5" />
-        {t("packageContents")}
-      </h3>
-
-      {failed ? (
-        <div className={`${boxClass} text-muted-foreground p-3 text-xs`}>
-          {t("packageContentsError")}
-        </div>
-      ) : files === null ? (
-        <div className={`${boxClass} text-muted-foreground p-3 text-xs`}>
-          {t("packageContentsLoading")}
-        </div>
-      ) : files.length === 0 ? (
-        <div className={`${boxClass} text-muted-foreground p-3 text-xs`}>—</div>
-      ) : (
-        <div className={`${boxClass} flex flex-col overflow-hidden sm:flex-row`}>
-          {/* 左:文件树 */}
-          <div className="border-border/60 max-h-80 overflow-auto border-b p-2 sm:max-h-96 sm:w-52 sm:shrink-0 sm:border-r sm:border-b-0 dark:border-white/[0.08]">
-            {fileRows(buildTree(files), selected, setSelected)}
-          </div>
-          {/* 右:选中文件内容 */}
-          <div className="max-h-80 min-w-0 flex-1 overflow-auto p-3 sm:max-h-96">
-            {!selectedFile ? (
-              <p className="text-muted-foreground text-xs">
-                {t("filePreviewHint")}
-              </p>
-            ) : (
-              <>
-                <div className="text-muted-foreground/70 mb-1.5 truncate font-[Menlo,monospace] text-[10px]">
-                  {selectedFile.path}
-                </div>
-                {selectedFile.text === null ? (
-                  <p className="text-muted-foreground text-xs">
-                    {t("filePreviewUnavailable")}
-                  </p>
-                ) : (
-                  <pre className="text-foreground/90 font-[Menlo,monospace] text-[11px] leading-relaxed whitespace-pre-wrap">
-                    {selectedFile.text}
-                  </pre>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      )}
-    </section>
   );
 }
 
@@ -431,18 +250,7 @@ export function SkillDetailSheet({
                 </div>
               </section>
 
-              {/* About */}
-              <section className="space-y-1.5">
-                <h3 className="text-foreground inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
-                  <ScrollText className="size-3.5" />
-                  {t("about")}
-                </h3>
-                <p className="text-foreground text-sm leading-relaxed">
-                  {pickLocale(current.longDescription, locale)}
-                </p>
-              </section>
-
-              {/* Install */}
+              {/* 安装 */}
               <section className="space-y-2">
                 <h3 className="text-foreground inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
                   <Download className="size-3.5" />
@@ -451,8 +259,33 @@ export function SkillDetailSheet({
                 <DownloadPanel skill={current} />
               </section>
 
-              {/* 包内容 */}
-              <PackageContents skill={current} />
+              {/* 说明:SKILL.md 渲染(无则回退 longDescription) */}
+              <section className="space-y-1.5">
+                <h3 className="text-foreground inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
+                  <ScrollText className="size-3.5" />
+                  {t("docHeading")}
+                </h3>
+                {current.skillMd ? (
+                  <div className="prose prose-sm dark:prose-invert prose-pre:bg-muted/50 prose-pre:text-foreground/90 max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {current.skillMd}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  <p className="text-foreground text-sm leading-relaxed">
+                    {pickLocale(current.longDescription, locale)}
+                  </p>
+                )}
+                {current.hasPackage && (
+                  <Link
+                    href={`/skills/${current.id}`}
+                    className="text-muted-foreground hover:text-foreground mt-2 inline-flex items-center gap-1 text-xs font-medium underline-offset-2 hover:underline"
+                  >
+                    {t("viewFullContent")}
+                    <ArrowRight className="size-3.5" />
+                  </Link>
+                )}
+              </section>
             </div>
           </div>
         </div>
