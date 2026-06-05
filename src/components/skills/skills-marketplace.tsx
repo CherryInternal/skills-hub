@@ -131,12 +131,21 @@ export function SkillsMarketplace() {
   const skillsQuery = api.skill.list.useQuery({ limit: 200 });
   const allSkills = (skillsQuery.data?.items ?? []) as Skill[];
 
-  const [activeDomain, setActiveDomain] = useState<SkillDomain | null>(() => {
-    const d = searchParams.get("domain");
-    return d && (SKILL_DOMAINS as readonly string[]).includes(d)
-      ? (d as SkillDomain)
+  // Domain filter is URL-driven (single source of truth), so both the sidebar
+  // and the detail-sheet breadcrumb (which navigates to /?domain=...) stay in
+  // sync — deriving it avoids the stale-once-mounted state bug.
+  const domainParam = searchParams.get("domain");
+  const activeDomain: SkillDomain | null =
+    domainParam && (SKILL_DOMAINS as readonly string[]).includes(domainParam)
+      ? (domainParam as SkillDomain)
       : null;
-  });
+  const setActiveDomain = (d: SkillDomain | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (d) params.set("domain", d);
+    else params.delete("domain");
+    const qs = params.toString();
+    router.replace(qs ? `/?${qs}` : "/", { scroll: false });
+  };
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOption>("popular");
   const [selected, setSelected] = useState<Skill | null>(null);

@@ -17,5 +17,5 @@ export async function GET(
   if (!row) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  return NextResponse.json(toPublicSkillDetail(row, new URL(req.url).origin));
+  return NextResponse.json(toPublicSkillDetail(row));
 }

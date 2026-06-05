@@ -42,7 +42,7 @@ export async function GET(req: Request) {
   ]);
 
   return NextResponse.json({
-    items: rows.map((r) => toPublicSkill(r, url.origin)),
+    items: rows.map((r) => toPublicSkill(r)),
     pagination: { total, limit, offset, hasMore: offset + rows.length < total },
   });
 }

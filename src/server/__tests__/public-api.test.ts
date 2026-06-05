@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { env } from "~/env";
 import { GET as listGET } from "~/app/api/skills/route";
 import { GET as detailGET } from "~/app/api/skills/[id]/route";
 import { db } from "~/server/db";
@@ -67,6 +68,24 @@ describe("GET /api/skills (public REST, integration)", () => {
     const pub = body.items.find((i) => i.id === PUB)!;
     expect(pub.longDescription).toBeUndefined(); // list items are trimmed
     expect(pub.downloadUrl).toBeNull(); // no package uploaded
+  });
+
+  it("downloadUrl uses APP_URL, not the request host (proxy-safe)", async () => {
+    await seed();
+    await db.skill.update({
+      where: { id: PUB },
+      data: { packageKey: "packages/x.zip", packageName: "x.zip", packageSize: 123 },
+    });
+    // Request arrives on http://localhost (no port) — emulating the internal
+    // listener behind nginx. The download link must use the public APP_URL.
+    const res = await listGET(listReq("?limit=100"));
+    const body = (await res.json()) as {
+      items: Array<{ id: string; downloadUrl: string | null }>;
+    };
+    const pub = body.items.find((i) => i.id === PUB)!;
+    expect(pub.downloadUrl).toBe(`${env.APP_URL}/api/skills/${PUB}/download`);
+    // Specifically NOT the request origin (http://localhost, no :3000).
+    expect(pub.downloadUrl).not.toMatch(/^http:\/\/localhost\//);
   });
 
   it("searches the Chinese description (descriptionZh)", async () => {

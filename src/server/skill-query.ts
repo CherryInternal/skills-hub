@@ -1,8 +1,17 @@
+import { env } from "~/env";
 import type { Prisma, Skill as SkillRow } from "../../generated/prisma";
 
 // Shared list query + public serialization, used by both the tRPC `skill.list`
 // (internal/front-end) and the public REST `GET /api/skills` (external clients),
 // so search/sort/filter logic lives in one place.
+
+// Public, client-reachable origin for absolute links. MUST come from APP_URL,
+// not the request URL — behind the documented nginx proxy the request resolves
+// to the internal listener (e.g. http://localhost:3000), which would hand REST
+// clients unusable download URLs.
+function publicOrigin(): string {
+  return env.APP_URL.replace(/\/+$/, "");
+}
 
 export type SkillSort = "popular" | "newest" | "name_asc";
 
@@ -36,7 +45,7 @@ export function buildSkillWhere(params: {
 
 // Public API list item — a stable JSON contract. Omits the full longDescription
 // body (that's only on the detail endpoint) to keep list payloads light.
-export function toPublicSkill(row: SkillRow, origin: string) {
+export function toPublicSkill(row: SkillRow) {
   return {
     id: row.id,
     name: { en: row.nameEn, zh: row.nameZh },
@@ -53,14 +62,16 @@ export function toPublicSkill(row: SkillRow, origin: string) {
     packageSize: row.packageSize,
     releaseDate: row.releaseDate.toISOString().slice(0, 10),
     // Absolute, stable download endpoint (302s to a presigned URL); null if no package.
-    downloadUrl: row.packageKey ? `${origin}/api/skills/${row.id}/download` : null,
+    downloadUrl: row.packageKey
+      ? `${publicOrigin()}/api/skills/${row.id}/download`
+      : null,
   };
 }
 
 // Detail = list item + the full longDescription body.
-export function toPublicSkillDetail(row: SkillRow, origin: string) {
+export function toPublicSkillDetail(row: SkillRow) {
   return {
-    ...toPublicSkill(row, origin),
+    ...toPublicSkill(row),
     longDescription: { en: row.longDescEn, zh: row.longDescZh },
   };
 }
