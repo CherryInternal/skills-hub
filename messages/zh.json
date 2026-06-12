@@ -88,7 +88,7 @@
   "detail": {
     "dataSource": "数据来源",
     "about": "介绍",
-    "docHeading": "说明",
+    "docHeading": "内容",
     "breadcrumbRoot": "技能",
     "updated": "更新于 {time}",
     "shareLabel": "分享",
