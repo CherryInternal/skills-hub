@@ -16,6 +16,7 @@ import {
   Shield,
   Star,
   ScrollText,
+  FileText,
 } from "lucide-react";
 import {
   Sheet,
@@ -124,6 +125,8 @@ export function SkillDetailSheet({
   if (!current) return null;
 
   const Icon = Sparkles;
+  const longDescription = pickLocale(current.longDescription, locale).trim();
+  const skillMd = current.skillMd?.trim();
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -262,22 +265,31 @@ export function SkillDetailSheet({
                 <DownloadPanel skill={current} />
               </section>
 
-              {/* 说明:SKILL.md 渲染(无则回退 longDescription) */}
-              <section className="space-y-1.5">
-                <h3 className="text-foreground inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
-                  <ScrollText className="size-3.5" />
-                  {t("docHeading")}
-                </h3>
-                <div className="border-border bg-card rounded-lg border p-4 dark:border-white/[0.12]">
-                  {current.skillMd ? (
-                    <SkillMarkdown>{current.skillMd}</SkillMarkdown>
-                  ) : (
-                    <p className="text-foreground/80 text-sm leading-relaxed">
-                      {pickLocale(current.longDescription, locale)}
+              {longDescription && (
+                <section className="space-y-1.5">
+                  <h3 className="text-foreground inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
+                    <ScrollText className="size-3.5" />
+                    {t("about")}
+                  </h3>
+                  <div className="border-border bg-card rounded-lg border p-4 dark:border-white/[0.12]">
+                    <p className="text-foreground/80 whitespace-pre-line text-sm leading-relaxed">
+                      {longDescription}
                     </p>
-                  )}
-                </div>
-              </section>
+                  </div>
+                </section>
+              )}
+
+              {skillMd && (
+                <section className="space-y-1.5">
+                  <h3 className="text-foreground inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
+                    <FileText className="size-3.5" />
+                    {t("docHeading")}
+                  </h3>
+                  <div className="border-border bg-card rounded-lg border p-4 dark:border-white/[0.12]">
+                    <SkillMarkdown>{skillMd}</SkillMarkdown>
+                  </div>
+                </section>
+              )}
             </div>
           </div>
         </div>
